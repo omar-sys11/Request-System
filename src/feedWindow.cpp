@@ -123,3 +123,19 @@ QWidget* FeedWindow::createCard(const FeedItem* item)
 
     return card;
 }
+
+void FeedWindow::refreshFeed()
+{
+    QLayoutItem* child;
+
+    while ((child = feedLayout->takeAt(0)) != nullptr)
+    {
+        delete child->widget();
+        delete child;
+    }
+
+    for (const FeedItem* item : board.getAll())
+    {
+        feedLayout->addWidget(createCard(item));
+    }
+}
