@@ -1,12 +1,12 @@
 #include "FeedWindow.h"
 
-#include <QLabel>
-#include <QFrame>
 #include <QDateTime>
+#include <QFrame>
+#include <QLabel>
 
-// your derived classes
-#include "RequestItem.h"
+// your items
 #include "MessageItem.h"
+#include "RequestItem.h"
 #include "AcceptItem.h"
 
 FeedWindow::FeedWindow(QWidget *parent)
@@ -17,7 +17,7 @@ FeedWindow::FeedWindow(QWidget *parent)
 
     auto* mainLayout = new QVBoxLayout(this);
 
-    // INPUT ROW
+    // ---------------- INPUT ----------------
     typeBox = new QComboBox();
     typeBox->addItem("Message");
     typeBox->addItem("Request");
@@ -29,17 +29,17 @@ FeedWindow::FeedWindow(QWidget *parent)
     contentInput = new QLineEdit();
     contentInput->setPlaceholderText("Content");
 
-    auto* addBtn = new QPushButton("Add");
+    addButton = new QPushButton("Add");
 
     auto* inputLayout = new QHBoxLayout();
     inputLayout->addWidget(typeBox);
     inputLayout->addWidget(senderInput);
     inputLayout->addWidget(contentInput);
-    inputLayout->addWidget(addBtn);
+    inputLayout->addWidget(addButton);
 
     mainLayout->addLayout(inputLayout);
 
-    // FEED AREA (scrollable)
+    // ---------------- FEED AREA ----------------
     feedContainer = new QWidget();
     feedLayout = new QVBoxLayout(feedContainer);
     feedLayout->setAlignment(Qt::AlignTop);
@@ -50,5 +50,7 @@ FeedWindow::FeedWindow(QWidget *parent)
 
     mainLayout->addWidget(scrollArea);
 
-    connect(addBtn, &QPushButton::clicked, this, &FeedWindow::onAddClicked);
+    // ---------------- SIGNAL ----------------
+    connect(addButton, &QPushButton::clicked,
+            this, &FeedWindow::onAddClicked);
 }
