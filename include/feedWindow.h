@@ -7,7 +7,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 
-#include "FeedBoard.h"
+#include "request_board.h"
 
 class FeedWindow : public QWidget
 {
