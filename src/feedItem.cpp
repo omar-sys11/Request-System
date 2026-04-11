@@ -1,4 +1,4 @@
-#include "FeedItem.h"
+#include "feedItem.h"
 
 FeedItem::FeedItem(std::string sender, std::string content, long long timestamp)
     : sender(std::move(sender)), content(std::move(content)), timestamp(timestamp) {}
