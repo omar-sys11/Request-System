@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "FeedItem.h"
+#include "feedItem.h"
 
 class FeedBoard
 {
