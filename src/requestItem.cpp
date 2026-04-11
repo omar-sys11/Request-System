@@ -1,4 +1,4 @@
-#include "RequestItem.h"
+#include "requestItem.h"
 
 FeedType RequestItem::getType() const
 {
