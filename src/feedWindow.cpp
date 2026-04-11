@@ -88,3 +88,38 @@ void FeedWindow::onAddClicked()
     senderInput->clear();
     contentInput->clear();
 }
+
+QWidget* FeedWindow::createCard(const FeedItem* item)
+{
+    auto* card = new QFrame();
+    card->setFrameShape(QFrame::StyledPanel);
+
+    card->setStyleSheet(R"(
+        QFrame {
+            background-color: #2b2b2b;
+            border-radius: 10px;
+            padding: 8px;
+        }
+        QLabel {
+            color: white;
+        }
+    )");
+
+    auto* layout = new QVBoxLayout(card);
+
+    QLabel* title = new QLabel(QString::fromStdString(item->getTitle()));
+    QFont f = title->font();
+    f.setBold(true);
+    title->setFont(f);
+
+    QLabel* content = new QLabel(QString::fromStdString(item->getContent()));
+
+    QString color = QString::fromStdString(item->getDisplayColor());
+    card->setStyleSheet(card->styleSheet() +
+        QString("QFrame { border-left: 5px solid %1; }").arg(color));
+
+    layout->addWidget(title);
+    layout->addWidget(content);
+
+    return card;
+}
