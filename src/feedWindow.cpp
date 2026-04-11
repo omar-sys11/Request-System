@@ -1,4 +1,4 @@
-#include "FeedWindow.h"
+#include "feedWindow.h"
 
 #include <QDateTime>
 #include <QFrame>
