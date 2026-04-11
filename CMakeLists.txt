@@ -15,7 +15,7 @@ set(SOURCES
     src/main.cpp
 
     src/feedWindow.cpp
-    src/feedBoard.cpp
+    src/request_board.cpp
 
     src/feedItem.cpp
     src/requestItem.cpp
@@ -25,7 +25,7 @@ set(SOURCES
 
 set(HEADERS
     include/feedWindow.h
-    include/feedBoard.h
+    include/request_board.h
 
     include/feedItem.h
     include/requestItem.h
