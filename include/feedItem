@@ -1,0 +1,16 @@
+#pragma once
+#include <string>
+#include <ctime>
+
+class FeedItem {
+protected:
+    std::time_t timestamp;
+
+public:
+    FeedItem();
+    virtual ~FeedItem() = default;
+
+    std::time_t getTimestamp() const;
+
+    virtual std::string getType() const = 0;
+};
