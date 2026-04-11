@@ -1,5 +1,5 @@
 #pragma once
-#include "FeedItem.h"
+#include "feedItem.h"
 
 class RequestItem : public FeedItem
 {
