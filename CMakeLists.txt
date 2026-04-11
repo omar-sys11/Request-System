@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(FeedSystem LANGUAGES CXX)
+project(feedSystem LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,30 +14,30 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 set(SOURCES
     src/main.cpp
 
-    src/FeedWindow.cpp
-    src/FeedBoard.cpp
+    src/feedWindow.cpp
+    src/feedBoard.cpp
 
-    src/FeedItem.cpp
-    src/RequestItem.cpp
-    src/MessageItem.cpp
-    src/AcceptItem.cpp
+    src/feedItem.cpp
+    src/requestItem.cpp
+    src/messageItem.cpp
+    src/acceptItem.cpp
 )
 
 set(HEADERS
-    include/FeedWindow.h
-    include/FeedBoard.h
+    include/feedWindow.h
+    include/feedBoard.h
 
-    include/FeedItem.h
-    include/RequestItem.h
+    include/feedItem.h
+    include/requestItem.h
     include/MessageItem.h
-    include/AcceptItem.h
+    include/acceptItem.h
 )
 
-add_executable(FeedSystem
+add_executable(feedSystem
     ${SOURCES}
     ${HEADERS}
 )
 
-target_include_directories(FeedSystem PRIVATE include)
+target_include_directories(feedSystem PRIVATE include)
 
-target_link_libraries(FeedSystem PRIVATE Qt6::Widgets)
+target_link_libraries(feedSystem PRIVATE Qt6::Widgets)
