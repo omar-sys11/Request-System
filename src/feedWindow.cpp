@@ -5,9 +5,9 @@
 #include <QLabel>
 
 // your items
-#include "MessageItem.h"
-#include "RequestItem.h"
-#include "AcceptItem.h"
+#include "messageItem.h"
+#include "requestItem.h"
+#include "acceptItem.h"
 
 FeedWindow::FeedWindow(QWidget *parent)
     : QWidget(parent)
