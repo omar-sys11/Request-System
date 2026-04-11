@@ -1,5 +1,5 @@
 #include <QApplication>
-#include "FeedWindow.h"
+#include "feedWindow.h"
 
 int main(int argc, char *argv[])
 {
