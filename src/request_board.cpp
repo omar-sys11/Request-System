@@ -1,4 +1,4 @@
-#include "FeedBoard.h"
+#include "request_board.h"
 
 void FeedBoard::add(std::unique_ptr<FeedItem> item)
 {
