@@ -14,7 +14,7 @@ class FeedWindow : public QWidget
     Q_OBJECT
 
 public:
-    FeedWindow(QWidget *parent = nullptr);
+    explicit FeedWindow(QWidget *parent = nullptr);
 
 private slots:
     void onAddClicked();
@@ -22,12 +22,16 @@ private slots:
 private:
     FeedBoard board;
 
+    // input UI
     QComboBox* typeBox;
     QLineEdit* senderInput;
     QLineEdit* contentInput;
 
-    QVBoxLayout* feedLayout;
+    QPushButton* addButton;
+
+    // feed UI
     QWidget* feedContainer;
+    QVBoxLayout* feedLayout;
     QScrollArea* scrollArea;
 
     void refreshFeed();
