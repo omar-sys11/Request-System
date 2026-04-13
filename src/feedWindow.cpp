@@ -5,7 +5,7 @@
 #include <QLabel>
 
 // your items
-#include "messageItem.h"
+#include "MessageItem.h"
 #include "requestItem.h"
 #include "acceptItem.h"
 
