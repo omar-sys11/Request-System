@@ -1,4 +1,4 @@
-#include "messageItem.h"
+#include "MessageItem.h"
 
 FeedType MessageItem::getType() const
 {
