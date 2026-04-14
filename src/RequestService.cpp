@@ -1,15 +1,13 @@
 #include "RequestService.h"
 #include <QDebug>
 
-RequestService::RequestService()
-{
+RequestService::RequestService() {
 }
 
-void RequestService::addRequest(const QString& title,
-                                const QString& category,
-                                const QString& location,
-                                const QString& ownerId)
-{
+void RequestService::addRequest(const QString &title,
+                                const QString &category,
+                                const QString &location,
+                                const QString &ownerId) {
     qDebug() << "Request added:";
     qDebug() << "Title:" << title;
     qDebug() << "Category:" << category;

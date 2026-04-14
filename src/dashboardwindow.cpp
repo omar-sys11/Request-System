@@ -22,9 +22,8 @@ struct Request {
 
 static std::vector<Request> requests;
 
-DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
-    : QWidget(parent), currentUser(user)
-{
+DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
+    : QWidget(parent), currentUser(user) {
     titleLabel = new QLabel(
         QString("Welcome, %1 — Live Requests Feed")
         .arg(QString::fromStdString(currentUser.getDisplayName())),
@@ -55,28 +54,26 @@ DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
     resize(500, 400);
 
     connect(newRequestButton, &QPushButton::clicked, this, [this]() {
-
         CreateRequestWindow *win = new CreateRequestWindow();
 
         connect(win, &CreateRequestWindow::requestCreated,
                 this, [this](QString title, QString category, QString location) {
+                    Request r;
+                    r.id = QUuid::createUuid().toString();
+                    r.ownerId = QString::fromStdString(currentUser.getId());
+                    r.title = title;
+                    r.category = category;
+                    r.location = location;
+                    r.status = "Open";
 
-            Request r;
-            r.id = QUuid::createUuid().toString();
-            r.ownerId = QString::fromStdString(currentUser.getId());
-            r.title = title;
-            r.category = category;
-            r.location = location;
-            r.status = "Open";
+                    requests.push_back(r);
 
-            requests.push_back(r);
+                    RequestService service;
+                    service.addRequest(title, category, location,
+                                       QString::fromStdString(currentUser.getId()));
 
-            RequestService service;
-            service.addRequest(title, category, location,
-                               QString::fromStdString(currentUser.getId()));
-
-            refreshRequests();   
-        });
+                    refreshRequests();
+                });
 
         win->show();
     });
@@ -84,16 +81,14 @@ DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
     refreshRequests();
 }
 
-void DashboardWindow::refreshRequests()
-{
+void DashboardWindow::refreshRequests() {
     QLayoutItem *item;
     while ((item = requestsLayout->takeAt(0))) {
         delete item->widget();
         delete item;
     }
 
-    for (const auto &r : requests) {
-
+    for (const auto &r: requests) {
         QFrame *card = new QFrame(this);
         card->setFrameShape(QFrame::StyledPanel);
 
@@ -108,14 +103,13 @@ void DashboardWindow::refreshRequests()
         QPushButton *closeBtn = new QPushButton("Close", this);
 
         connect(acceptBtn, &QPushButton::clicked, this, [=]() mutable {
-
             if (r.ownerId == QString::fromStdString(currentUser.getId())) {
                 QMessageBox::warning(this, "Error",
                                      "You cannot accept your own request.");
                 return;
             }
 
-            for (auto &req : requests) {
+            for (auto &req: requests) {
                 if (req.id == r.id && req.status == "Open") {
                     req.status = "Accepted";
                     refreshRequests();
@@ -125,14 +119,13 @@ void DashboardWindow::refreshRequests()
         });
 
         connect(closeBtn, &QPushButton::clicked, this, [=]() mutable {
-
             if (r.ownerId != QString::fromStdString(currentUser.getId())) {
                 QMessageBox::warning(this, "Error",
                                      "Only owner can close request.");
                 return;
             }
 
-            for (auto &req : requests) {
+            for (auto &req: requests) {
                 if (req.id == r.id) {
                     req.status = "Closed";
                     refreshRequests();

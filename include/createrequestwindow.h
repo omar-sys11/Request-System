@@ -33,4 +33,4 @@ private:
     QPushButton *submitButton;
 };
 
-#endif // CREATEREQUESTWINDOW_H
+#endif
