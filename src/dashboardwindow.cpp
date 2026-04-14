@@ -8,16 +8,19 @@
 #include <QHBoxLayout>
 #include <QFrame>
 #include <QFont>
+#include <QMessageBox>
+#include <QUuid>
 
-static QString statusToString(RequestStatus status)
-{
-    switch (status) {
-        case RequestStatus::Open: return "Open";
-        case RequestStatus::Accepted: return "Accepted";
-        case RequestStatus::Closed: return "Closed";
-    }
-    return "Unknown";
-}
+struct Request {
+    QString id;
+    QString ownerId;
+    QString title;
+    QString category;
+    QString location;
+    QString status; 
+};
+
+static std::vector<Request> requests;
 
 DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
     : QWidget(parent), currentUser(user)
@@ -42,56 +45,113 @@ DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
 
     requestsLayout = new QVBoxLayout;
 
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addLayout(topLayout);
-    mainLayout->addSpacing(10);
-    mainLayout->addLayout(requestsLayout);
+    auto renderRequest = [this](const Request& r) {
+
+        QFrame *card = new QFrame(this);
+        card->setFrameShape(QFrame::StyledPanel);
+
+        QVBoxLayout *layout = new QVBoxLayout(card);
+
+        QLabel *title = new QLabel(r.title, this);
+        QLabel *cat = new QLabel("Category: " + r.category, this);
+        QLabel *loc = new QLabel("Location: " + r.location, this);
+        QLabel *status = new QLabel("Status: " + r.status, this);
+
+        QPushButton *acceptBtn = new QPushButton("Accept", this);
+        QPushButton *closeBtn = new QPushButton("Close", this);
+
+        // Accept request
+        connect(acceptBtn, &QPushButton::clicked, this, [=]() mutable {
+
+            if (r.ownerId == QString::fromStdString(currentUser.getId())) {
+                QMessageBox::warning(this, "Invalid Action",
+                                     "You cannot accept your own request.");
+                return;
+            }
+
+            for (auto &req : requests) {
+                if (req.id == r.id && req.status == "Open") {
+                    req.status = "Accepted";
+                    QMessageBox::information(this, "Accepted",
+                                             "You accepted the request.");
+                    refresh();
+                    return;
+                }
+            }
+        });
+
+        connect(closeBtn, &QPushButton::clicked, this, [=]() mutable {
+
+            if (r.ownerId != QString::fromStdString(currentUser.getId())) {
+                QMessageBox::warning(this, "Invalid Action",
+                                     "Only the owner can close this request.");
+                return;
+            }
+
+            for (auto &req : requests) {
+                if (req.id == r.id) {
+                    req.status = "Closed";
+                    refresh();
+                    return;
+                }
+            }
+        });
+
+        layout->addWidget(title);
+        layout->addWidget(cat);
+        layout->addWidget(loc);
+        layout->addWidget(status);
+        layout->addWidget(acceptBtn);
+        layout->addWidget(closeBtn);
+
+        requestsLayout->addWidget(card);
+    };
+
+    auto refresh = [this, renderRequest]() {
+        QLayoutItem *item;
+        while ((item = requestsLayout->takeAt(0))) {
+            delete item->widget();
+            delete item;
+        }
+
+        for (const auto &r : requests) {
+            renderRequest(r);
+        }
+
+        requestsLayout->addStretch();
+    };
+
+    this->setProperty("refresh", QVariant::fromValue((void*)&refresh));
+
+    connect(newRequestButton, &QPushButton::clicked, this, [this, refresh]() {
+
+        CreateRequestWindow *createRequestWindow = new CreateRequestWindow();
+
+        connect(createRequestWindow, &CreateRequestWindow::requestCreated,
+                this, [this, refresh](QString title, QString category, QString location) {
+
+            Request r;
+            r.id = QUuid::createUuid().toString();
+            r.ownerId = QString::fromStdString(currentUser.getId());
+            r.title = title;
+            r.category = category;
+            r.location = location;
+            r.status = "Open";
+
+            requests.push_back(r);
+
+            RequestService service;
+            service.handleRequest(title, category, location);
+
+            refresh();
+        });
+
+        createRequestWindow->show();
+    });
 
     setLayout(mainLayout);
     setWindowTitle("Dashboard");
     resize(500, 400);
 
-    connect(newRequestButton, &QPushButton::clicked, this, [this]() {
-        CreateRequestWindow *createRequestWindow = new CreateRequestWindow();
-
-        connect(createRequestWindow, &CreateRequestWindow::requestCreated,
-                this, [this](QString title, QString category, QString location) {
-
-            service.addRequest(title, category, location);
-
-            int index = (int)service.getRequests().size() - 1;
-            Request &req = service.getRequests()[index];
-
-            QFrame *frame = new QFrame(this);
-            frame->setFrameShape(QFrame::StyledPanel);
-
-            QVBoxLayout *layout = new QVBoxLayout(frame);
-
-            QLabel *statusLabel = new QLabel("Status: Open", this);
-
-            QPushButton *acceptBtn = new QPushButton("Accept", this);
-            QPushButton *closeBtn = new QPushButton("Close", this);
-
-            layout->addWidget(new QLabel(req.title, this));
-            layout->addWidget(new QLabel("Category: " + req.category, this));
-            layout->addWidget(new QLabel("Location: " + req.location, this));
-            layout->addWidget(statusLabel);
-            layout->addWidget(acceptBtn);
-            layout->addWidget(closeBtn);
-
-            connect(acceptBtn, &QPushButton::clicked, this, [=]() mutable {
-                service.acceptRequest(index);
-                statusLabel->setText("Status: Accepted");
-            });
-
-            connect(closeBtn, &QPushButton::clicked, this, [=]() mutable {
-                service.closeRequest(index);
-                statusLabel->setText("Status: Closed");
-            });
-
-            requestsLayout->insertWidget(0, frame);
-        });
-
-        createRequestWindow->show();
-    });
+    refresh();
 }
