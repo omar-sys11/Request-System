@@ -14,6 +14,8 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 set(SOURCES
     src/main.cpp
     src/user.cpp
+    src/UserService.cpp
+    src/RequestService.cpp
     src/createrequestwindow.cpp
     src/loginwindow.cpp
     src/dashboardwindow.cpp
