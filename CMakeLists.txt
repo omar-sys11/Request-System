@@ -12,6 +12,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 add_executable(feedSystem
     src/main.cpp
+    src/user.cpp
     src/createrequestwindow.cpp
     src/loginwindow.cpp
     src/dashboardwindow.cpp
