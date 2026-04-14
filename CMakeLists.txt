@@ -27,7 +27,8 @@ set(HEADERS
         include/dashboardwindow.h
         include/createrequestwindow.h
         include/RequestManager.h
-        src/RequestManager.cpp
+        include/RequestManager.h
+
 )
 
 add_executable(feedSystem
