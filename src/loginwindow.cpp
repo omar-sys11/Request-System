@@ -11,8 +11,7 @@
 #include "user.h"
 
 LoginWindow::LoginWindow(QWidget *parent)
-    : QWidget(parent)
-{
+    : QWidget(parent) {
     titleLabel = new QLabel("Request System Login", this);
     QFont titleFont;
     titleFont.setPointSize(14);
@@ -54,8 +53,7 @@ LoginWindow::LoginWindow(QWidget *parent)
             this, &LoginWindow::onConnectButtonClicked);
 }
 
-void LoginWindow::onConnectButtonClicked()
-{
+void LoginWindow::onConnectButtonClicked() {
     QString name = nameEdit->text().trimmed();
     QString ip = ipEdit->text().trimmed();
     QString portText = portEdit->text().trimmed();

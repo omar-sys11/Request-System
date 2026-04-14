@@ -8,9 +8,8 @@
 #include <QFrame>
 #include <QFont>
 
-DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
-    : QWidget(parent), currentUser(user)
-{
+DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
+    : QWidget(parent), currentUser(user) {
     titleLabel = new QLabel(
         QString("Welcome, %1 — Live Requests Feed")
         .arg(QString::fromStdString(currentUser.getDisplayName())),
@@ -73,19 +72,18 @@ DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
 
         connect(createRequestWindow, &CreateRequestWindow::requestCreated,
                 this, [this](QString title, QString category, QString location) {
-
                     RequestService service;
                     service.handleRequest(title, category, location);
-                    
+
                     QFrame *newRequest = new QFrame(this);
                     newRequest->setFrameShape(QFrame::StyledPanel);
-                    
+
                     QVBoxLayout *layout = new QVBoxLayout(newRequest);
                     layout->addWidget(new QLabel(title, this));
                     layout->addWidget(new QLabel("Category: " + category, this));
                     layout->addWidget(new QLabel("Location: " + location, this));
                     layout->addWidget(new QLabel("Status: Open", this));
-                    
+
                     requestsLayout->insertWidget(0, newRequest);
                 });
 

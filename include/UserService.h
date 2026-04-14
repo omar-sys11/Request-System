@@ -4,5 +4,5 @@
 
 class UserService {
 public:
-    User createUser(const std::string& name);
+    User createUser(const std::string &name);
 };
