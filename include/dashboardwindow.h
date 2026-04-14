@@ -8,12 +8,11 @@ class QLabel;
 class QPushButton;
 class QVBoxLayout;
 
-class DashboardWindow : public QWidget
-{
+class DashboardWindow : public QWidget {
     Q_OBJECT
 
 public:
-    explicit DashboardWindow(const User& user, QWidget *parent = nullptr);
+    explicit DashboardWindow(const User &user, QWidget *parent = nullptr);
 
 private:
     User currentUser;

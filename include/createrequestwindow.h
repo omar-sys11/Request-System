@@ -8,8 +8,7 @@ class QLineEdit;
 class QComboBox;
 class QPushButton;
 
-class CreateRequestWindow : public QWidget
-{
+class CreateRequestWindow : public QWidget {
     Q_OBJECT
 
 public:

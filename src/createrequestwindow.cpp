@@ -10,8 +10,7 @@
 #include <QFont>
 
 CreateRequestWindow::CreateRequestWindow(QWidget *parent)
-    : QWidget(parent)
-{
+    : QWidget(parent) {
     titleLabel = new QLabel("Create New Request", this);
     categoryLabel = new QLabel("Category:", this);
     locationLabel = new QLabel("Location:", this);
@@ -57,9 +56,7 @@ CreateRequestWindow::CreateRequestWindow(QWidget *parent)
             this, &CreateRequestWindow::onSubmitClicked);
 }
 
-void CreateRequestWindow::onSubmitClicked()
-
-{
+void CreateRequestWindow::onSubmitClicked() {
     QString title = titleEdit->text().trimmed();
     QString location = locationEdit->text().trimmed();
 
@@ -72,7 +69,7 @@ void CreateRequestWindow::onSubmitClicked()
         title,
         categoryComboBox->currentText(),
         location
-        );
+    );
     statusLabel->setText("Request submitted successfully.");
     QMessageBox::information(this, "Success",
                              "Your request was submitted.");
