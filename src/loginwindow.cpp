@@ -75,12 +75,11 @@ void LoginWindow::onConnectButtonClicked()
         return;
     }
 
-    std::string userId = QUuid::createUuid().toString().toStdString();
-    std::string userName = name.toStdString();
-    User currentUser(userId, userName);
+    // SIMPLE SERVICE CALL
+    UserService service;
+    User currentUser = service.createUser(name.toStdString());
 
     statusLabel->setText("Status: Connected");
-    QMessageBox::information(this, "Connected", "Connected successfully.");
 
     DashboardWindow *dashboard = new DashboardWindow(currentUser);
     dashboard->show();
