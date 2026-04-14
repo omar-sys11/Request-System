@@ -53,3 +53,16 @@ TEST(UserTest, SetDisplayNameDoesNotChangeId) {
     u.setDisplayName("Bob");
     EXPECT_EQ(u.getId(), "u1");
 }
+
+TEST(RequestTest, SendRequestFailureHandled)
+{
+    MockRequestSender mockSender;
+
+    EXPECT_CALL(mockSender, sendRequest("Borrow charger", "Borrow Item"))
+        .Times(1)
+        .WillOnce(testing::Return(false));
+
+    bool result = mockSender.sendRequest("Borrow charger", "Borrow Item");
+
+    EXPECT_FALSE(result);
+}
