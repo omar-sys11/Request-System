@@ -1,5 +1,0 @@
-/home/moayadmobarez/Desktop/Request-System/build/Desktop-Debug/CMakeFiles/feedSystem.dir
-/home/moayadmobarez/Desktop/Request-System/build/Desktop-Debug/CMakeFiles/edit_cache.dir
-/home/moayadmobarez/Desktop/Request-System/build/Desktop-Debug/CMakeFiles/rebuild_cache.dir
-/home/moayadmobarez/Desktop/Request-System/build/Desktop-Debug/CMakeFiles/feedSystem_autogen_timestamp_deps.dir
-/home/moayadmobarez/Desktop/Request-System/build/Desktop-Debug/CMakeFiles/feedSystem_autogen.dir
