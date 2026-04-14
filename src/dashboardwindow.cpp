@@ -10,6 +10,7 @@
 #include <QFont>
 #include <QMessageBox>
 #include <QUuid>
+#include <functional>
 
 struct Request {
     QString id;
@@ -17,7 +18,7 @@ struct Request {
     QString title;
     QString category;
     QString location;
-    QString status; // Open, Accepted, Closed
+    QString status;
 };
 
 static std::vector<Request> requests;
@@ -45,7 +46,10 @@ DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
 
     requestsLayout = new QVBoxLayout;
 
-    auto refresh = [this]() {
+    std::function<void()> refresh;   // ✅ key fix
+
+    refresh = [this, &refresh]() {
+
         QLayoutItem *item;
         while ((item = requestsLayout->takeAt(0))) {
             delete item->widget();
@@ -67,7 +71,6 @@ DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
             QPushButton *acceptBtn = new QPushButton("Accept", this);
             QPushButton *closeBtn = new QPushButton("Close", this);
 
-            // ACCEPT REQUEST
             connect(acceptBtn, &QPushButton::clicked, this, [=]() mutable {
 
                 if (r.ownerId == QString::fromStdString(currentUser.getId())) {
@@ -79,15 +82,12 @@ DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
                 for (auto &req : requests) {
                     if (req.id == r.id && req.status == "Open") {
                         req.status = "Accepted";
-                        QMessageBox::information(this, "Success",
-                                                 "Request accepted.");
-                        refresh();
+                        refresh();   // ✅ now valid
                         return;
                     }
                 }
             });
 
-            // CLOSE REQUEST
             connect(closeBtn, &QPushButton::clicked, this, [=]() mutable {
 
                 if (r.ownerId != QString::fromStdString(currentUser.getId())) {
@@ -99,7 +99,7 @@ DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
                 for (auto &req : requests) {
                     if (req.id == r.id) {
                         req.status = "Closed";
-                        refresh();
+                        refresh();   // ✅ now valid
                         return;
                     }
                 }
@@ -118,12 +118,12 @@ DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
         requestsLayout->addStretch();
     };
 
-    connect(newRequestButton, &QPushButton::clicked, this, [this, refresh]() {
+    connect(newRequestButton, &QPushButton::clicked, this, [this, &refresh]() {
 
         CreateRequestWindow *win = new CreateRequestWindow();
 
         connect(win, &CreateRequestWindow::requestCreated,
-                this, [this, refresh](QString title, QString category, QString location) {
+                this, [this, &refresh](QString title, QString category, QString location) {
 
             Request r;
             r.id = QUuid::createUuid().toString();
