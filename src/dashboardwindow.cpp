@@ -1,6 +1,7 @@
 #include "dashboardwindow.h"
 #include "createrequestwindow.h"
 #include "RequestService.h"
+
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -8,13 +9,25 @@
 #include <QFrame>
 #include <QFont>
 
-DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
-    : QWidget(parent), currentUser(user) {
+static QString statusToString(RequestStatus status)
+{
+    switch (status) {
+        case RequestStatus::Open: return "Open";
+        case RequestStatus::Accepted: return "Accepted";
+        case RequestStatus::Closed: return "Closed";
+    }
+    return "Unknown";
+}
+
+DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
+    : QWidget(parent), currentUser(user)
+{
     titleLabel = new QLabel(
         QString("Welcome, %1 — Live Requests Feed")
-        .arg(QString::fromStdString(currentUser.getDisplayName())),
+            .arg(QString::fromStdString(currentUser.getDisplayName())),
         this
     );
+
     newRequestButton = new QPushButton("New Request", this);
 
     QFont titleFont;
@@ -28,35 +41,6 @@ DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
     topLayout->addWidget(newRequestButton);
 
     requestsLayout = new QVBoxLayout;
-
-    QFrame *request1 = new QFrame(this);
-    request1->setFrameShape(QFrame::StyledPanel);
-    QVBoxLayout *request1Layout = new QVBoxLayout(request1);
-    request1Layout->addWidget(new QLabel("Need calculus notes", this));
-    request1Layout->addWidget(new QLabel("Category: Study Help", this));
-    request1Layout->addWidget(new QLabel("Location: HUSS Building", this));
-    request1Layout->addWidget(new QLabel("Status: Open", this));
-
-    QFrame *request2 = new QFrame(this);
-    request2->setFrameShape(QFrame::StyledPanel);
-    QVBoxLayout *request2Layout = new QVBoxLayout(request2);
-    request2Layout->addWidget(new QLabel("Looking for a study partner", this));
-    request2Layout->addWidget(new QLabel("Category: Study Partner", this));
-    request2Layout->addWidget(new QLabel("Location: Library", this));
-    request2Layout->addWidget(new QLabel("Status: Open", this));
-
-    QFrame *request3 = new QFrame(this);
-    request3->setFrameShape(QFrame::StyledPanel);
-    QVBoxLayout *request3Layout = new QVBoxLayout(request3);
-    request3Layout->addWidget(new QLabel("Need a charger urgently", this));
-    request3Layout->addWidget(new QLabel("Category: Borrow Item", this));
-    request3Layout->addWidget(new QLabel("Location: Dorm 5", this));
-    request3Layout->addWidget(new QLabel("Status: Open", this));
-
-    requestsLayout->addWidget(request1);
-    requestsLayout->addWidget(request2);
-    requestsLayout->addWidget(request3);
-    requestsLayout->addStretch();
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addLayout(topLayout);
@@ -72,20 +56,41 @@ DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
 
         connect(createRequestWindow, &CreateRequestWindow::requestCreated,
                 this, [this](QString title, QString category, QString location) {
-                    RequestService service;
-                    service.handleRequest(title, category, location);
 
-                    QFrame *newRequest = new QFrame(this);
-                    newRequest->setFrameShape(QFrame::StyledPanel);
+            service.addRequest(title, category, location);
 
-                    QVBoxLayout *layout = new QVBoxLayout(newRequest);
-                    layout->addWidget(new QLabel(title, this));
-                    layout->addWidget(new QLabel("Category: " + category, this));
-                    layout->addWidget(new QLabel("Location: " + location, this));
-                    layout->addWidget(new QLabel("Status: Open", this));
+            int index = (int)service.getRequests().size() - 1;
+            Request &req = service.getRequests()[index];
 
-                    requestsLayout->insertWidget(0, newRequest);
-                });
+            QFrame *frame = new QFrame(this);
+            frame->setFrameShape(QFrame::StyledPanel);
+
+            QVBoxLayout *layout = new QVBoxLayout(frame);
+
+            QLabel *statusLabel = new QLabel("Status: Open", this);
+
+            QPushButton *acceptBtn = new QPushButton("Accept", this);
+            QPushButton *closeBtn = new QPushButton("Close", this);
+
+            layout->addWidget(new QLabel(req.title, this));
+            layout->addWidget(new QLabel("Category: " + req.category, this));
+            layout->addWidget(new QLabel("Location: " + req.location, this));
+            layout->addWidget(statusLabel);
+            layout->addWidget(acceptBtn);
+            layout->addWidget(closeBtn);
+
+            connect(acceptBtn, &QPushButton::clicked, this, [=]() mutable {
+                service.acceptRequest(index);
+                statusLabel->setText("Status: Accepted");
+            });
+
+            connect(closeBtn, &QPushButton::clicked, this, [=]() mutable {
+                service.closeRequest(index);
+                statusLabel->setText("Status: Closed");
+            });
+
+            requestsLayout->insertWidget(0, frame);
+        });
 
         createRequestWindow->show();
     });
