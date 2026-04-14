@@ -13,6 +13,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 set(SOURCES
     src/main.cpp
+    src/user.cpp
     src/createrequestwindow.cpp
     src/feedWindow.cpp
     src/request_board.cpp
