@@ -1,11 +1,15 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+#include <string>
 #include "RequestManager.h"
 #include "user.h"
 
+using ::testing::Return;
+
 TEST(UserTest, ConstructorSetsNameCorrectly) {
     User u("id123", "Alice");
-    EXPECT_EQ(u.getDisplayName(), "Alice");  
+    EXPECT_EQ(u.getDisplayName(), "Alice");
 }
 
 TEST(UserTest, DefaultConnectionIsTrue) {
@@ -19,21 +23,11 @@ TEST(UserTest, SetConnectionStatusWorks) {
     EXPECT_FALSE(u.isConnected());
 }
 
-
-class IRequestSender {
-public:
-    virtual ~IRequestSender() = default;
-    virtual bool sendRequest(const std::string& title,
-                             const std::string& category) = 0;
-};
-
-
-class MockRequestSender : public IRequestSender {
-public:
-    MOCK_METHOD(bool, sendRequest,
-                (const std::string& title, const std::string& category),
-                (override));
-};
+TEST(UserTest, SetDisplayNameDoesNotChangeId) {
+    User u("u1", "Alice");
+    u.setDisplayName("Bob");
+    EXPECT_EQ(u.getId(), "u1");
+}
 
 TEST(RequestManagerTest, AddRequestCreatesRequest) {
     RequestManager manager;
@@ -49,19 +43,26 @@ TEST(RequestManagerTest, AddRequestCreatesRequest) {
     EXPECT_EQ(requests[0].ownerId, "user1");
 }
 
-TEST(UserTest, SetDisplayNameDoesNotChangeId) {
-    User u("u1", "Alice");
-    u.setDisplayName("Bob");
-    EXPECT_EQ(u.getId(), "u1");
-}
+class IRequestSender {
+public:
+    virtual ~IRequestSender() = default;
+    virtual bool sendRequest(const std::string& title,
+                             const std::string& category) = 0;
+};
 
-TEST(RequestTest, SendRequestFailureHandled)
-{
+class MockRequestSender : public IRequestSender {
+public:
+    MOCK_METHOD(bool, sendRequest,
+                (const std::string& title, const std::string& category),
+                (override));
+};
+
+TEST(RequestTest, SendRequestFailureHandled) {
     MockRequestSender mockSender;
 
     EXPECT_CALL(mockSender, sendRequest("Borrow charger", "Borrow Item"))
         .Times(1)
-        .WillOnce(testing::Return(false));
+        .WillOnce(Return(false));
 
     bool result = mockSender.sendRequest("Borrow charger", "Borrow Item");
 

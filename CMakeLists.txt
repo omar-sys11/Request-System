@@ -11,14 +11,17 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
+# =========================
+# GUI APP
+# =========================
 set(APP_SOURCES
-    src/main.cpp
-    src/user.cpp
-    src/UserService.cpp
-    src/RequestManager.cpp
-    src/createrequestwindow.cpp
-    src/loginwindow.cpp
-    src/dashboardwindow.cpp
+        src/main.cpp
+        src/user.cpp
+        src/UserService.cpp
+        src/RequestManager.cpp
+        src/createrequestwindow.cpp
+        src/loginwindow.cpp
+        src/dashboardwindow.cpp
 )
 
 add_executable(feedSystem ${APP_SOURCES})
@@ -27,21 +30,29 @@ target_include_directories(feedSystem PRIVATE include)
 
 target_link_libraries(feedSystem PRIVATE Qt6::Widgets)
 
+# =========================
+# GOOGLE TEST (FETCHCONTENT)
+# =========================
 include(FetchContent)
 
 FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
 )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(googletest)
 
+enable_testing()
+
+# =========================
+# TEST EXECUTABLE
+# =========================
 set(TEST_SOURCES
-    tests/request_tests.cpp
-    src/user.cpp
-    src/RequestManager.cpp
+        tests/request_tests.cpp
+        src/user.cpp
+        src/RequestManager.cpp
 )
 
 add_executable(runTests ${TEST_SOURCES})
@@ -49,9 +60,11 @@ add_executable(runTests ${TEST_SOURCES})
 target_include_directories(runTests PRIVATE include)
 
 target_link_libraries(runTests
-    PRIVATE
-    GTest::gtest
-    GTest::gtest_main
+        PRIVATE
+        GTest::gtest
+        GTest::gtest_main
+        GTest::gmock
+        GTest::gmock_main
 )
 
 include(GoogleTest)
