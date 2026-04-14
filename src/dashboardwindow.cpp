@@ -1,5 +1,6 @@
 #include "dashboardwindow.h"
 #include "createrequestwindow.h"
+#include "RequestService.h"
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -7,10 +8,13 @@
 #include <QFrame>
 #include <QFont>
 
-DashboardWindow::DashboardWindow(QWidget *parent)
-    : QWidget(parent)
-{
-    titleLabel = new QLabel("Live Requests Feed", this);
+DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
+    : QWidget(parent), currentUser(user) {
+    titleLabel = new QLabel(
+        QString("Welcome, %1 — Live Requests Feed")
+        .arg(QString::fromStdString(currentUser.getDisplayName())),
+        this
+    );
     newRequestButton = new QPushButton("New Request", this);
 
     QFont titleFont;
@@ -62,11 +66,14 @@ DashboardWindow::DashboardWindow(QWidget *parent)
     setLayout(mainLayout);
     setWindowTitle("Dashboard");
     resize(500, 400);
+
     connect(newRequestButton, &QPushButton::clicked, this, [this]() {
         CreateRequestWindow *createRequestWindow = new CreateRequestWindow();
 
         connect(createRequestWindow, &CreateRequestWindow::requestCreated,
                 this, [this](QString title, QString category, QString location) {
+                    RequestService service;
+                    service.handleRequest(title, category, location);
 
                     QFrame *newRequest = new QFrame(this);
                     newRequest->setFrameShape(QFrame::StyledPanel);

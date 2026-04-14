@@ -1,5 +1,4 @@
 #include "loginwindow.h"
-
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
@@ -7,11 +6,12 @@
 #include <QFormLayout>
 #include <QMessageBox>
 #include <QFont>
+#include <QUuid>
 #include "dashboardwindow.h"
+#include "user.h"
 
 LoginWindow::LoginWindow(QWidget *parent)
-    : QWidget(parent)
-{
+    : QWidget(parent) {
     titleLabel = new QLabel("Request System Login", this);
     QFont titleFont;
     titleFont.setPointSize(14);
@@ -53,8 +53,7 @@ LoginWindow::LoginWindow(QWidget *parent)
             this, &LoginWindow::onConnectButtonClicked);
 }
 
-void LoginWindow::onConnectButtonClicked()
-{
+void LoginWindow::onConnectButtonClicked() {
     QString name = nameEdit->text().trimmed();
     QString ip = ipEdit->text().trimmed();
     QString portText = portEdit->text().trimmed();
@@ -74,11 +73,13 @@ void LoginWindow::onConnectButtonClicked()
         return;
     }
 
-    statusLabel->setText("Status: Connected");
-    QMessageBox::information(this, "Connected",
-                             "Connected successfully.");
+    // SIMPLE SERVICE CALL
+    UserService service;
+    User currentUser = service.createUser(name.toStdString());
 
-    DashboardWindow *dashboard = new DashboardWindow();
+    statusLabel->setText("Status: Connected");
+
+    DashboardWindow *dashboard = new DashboardWindow(currentUser);
     dashboard->show();
 
     this->close();

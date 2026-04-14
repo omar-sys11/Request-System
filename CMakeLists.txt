@@ -13,25 +13,16 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 set(SOURCES
     src/main.cpp
+    src/user.cpp
+    src/UserService.cpp
+    src/RequestService.cpp
     src/createrequestwindow.cpp
-    src/feedWindow.cpp
-    src/request_board.cpp
     src/loginwindow.cpp
-    src/feedItem.cpp
-    src/requestItem.cpp
-    src/messageItem.cpp
-    src/acceptItem.cpp
     src/dashboardwindow.cpp
 )
 
 set(HEADERS
-    include/feedWindow.h
-    include/request_board.h
     include/loginwindow.h
-    include/feedItem.h
-    include/requestItem.h
-    include/MessageItem.h
-    include/acceptItem.h
     include/dashboardwindow.h
     include/createrequestwindow.h
 )
