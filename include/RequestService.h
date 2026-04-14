@@ -12,7 +12,7 @@ public:
 
     std::vector<Request>& getRequests();
 
-    void acceptRequest(int index);
+    void acceptRequest(int index, const QString& userId);
     void closeRequest(int index);
 
 private:
