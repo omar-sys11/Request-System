@@ -11,7 +11,7 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
-set(SOURCES
+set(APP_SOURCES
     src/main.cpp
     src/user.cpp
     src/UserService.cpp
@@ -21,7 +21,25 @@ set(SOURCES
     src/dashboardwindow.cpp
 )
 
-add_executable(feedSystem ${SOURCES})
+add_executable(feedSystem ${APP_SOURCES})
 
 target_include_directories(feedSystem PRIVATE include)
 target_link_libraries(feedSystem PRIVATE Qt6::Widgets)
+
+find_package(GTest REQUIRED)
+
+set(TEST_SOURCES
+    tests/request_tests.cpp
+    src/user.cpp
+    src/RequestManager.cpp
+)
+
+add_executable(runTests ${TEST_SOURCES})
+
+target_include_directories(runTests PRIVATE include)
+
+target_link_libraries(runTests
+    PRIVATE
+    GTest::GTest
+    GTest::Main
+)
