@@ -11,5 +11,6 @@ struct Request {
     QString title;
     QString category;
     QString location;
+    QString ownerId;   
     RequestStatus status;
 };
