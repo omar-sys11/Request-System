@@ -11,6 +11,14 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Core)
 
+set(APP_HEADERS
+        include/createrequestwindow.h
+        include/dashboardwindow.h
+        include/loginwindow.h
+)
+
+set_source_files_properties(${APP_HEADERS} PROPERTIES AUTOMOC ON)
+
 set(APP_SOURCES
         src/main.cpp
         src/user.cpp
@@ -19,18 +27,11 @@ set(APP_SOURCES
         src/createrequestwindow.cpp
         src/loginwindow.cpp
         src/dashboardwindow.cpp
-        include/createrequestwindow.h
-        include/dashboardwindow.h
-        include/loginwindow.h
 )
 
-add_executable(feedSystem ${APP_SOURCES})
+add_executable(feedSystem ${APP_SOURCES} ${APP_HEADERS})
 
 target_include_directories(feedSystem PRIVATE include)
-
-set_target_properties(feedSystem PROPERTIES
-        AUTOMOC_PATH_PREFIX ON
-)
 
 target_link_libraries(feedSystem PRIVATE Qt6::Widgets Qt6::Core)
 
