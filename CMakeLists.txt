@@ -5,11 +5,11 @@ project(feedSystem LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
-
-qt_standard_project_setup()
-
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core)
 
 set(APP_SOURCES
         src/main.cpp
@@ -21,13 +21,11 @@ set(APP_SOURCES
         src/dashboardwindow.cpp
 )
 
-qt_add_executable(feedSystem
-        ${APP_SOURCES}
-)
+add_executable(feedSystem ${APP_SOURCES})
 
 target_include_directories(feedSystem PRIVATE include)
 
-target_link_libraries(feedSystem PRIVATE Qt6::Widgets)
+target_link_libraries(feedSystem PRIVATE Qt6::Widgets Qt6::Core)
 
 include(FetchContent)
 
@@ -37,6 +35,7 @@ FetchContent_Declare(
 )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
@@ -54,8 +53,10 @@ target_include_directories(runTests PRIVATE include)
 target_link_libraries(runTests
         PRIVATE
         GTest::gtest
-        GTest::gmock
         GTest::gtest_main
+        GTest::gmock
+        GTest::gmock_main
+        Qt6::Core
 )
 
 include(GoogleTest)
