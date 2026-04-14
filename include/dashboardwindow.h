@@ -20,7 +20,7 @@ private:
     QPushButton *newRequestButton;
     QVBoxLayout *requestsLayout;
 
-    void refreshRequests();   // ✅ ADD THIS
+    void refreshRequests();   
 };
 
 #endif
