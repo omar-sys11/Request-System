@@ -12,25 +12,28 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 set(SOURCES
-    src/main.cpp
-    src/user.cpp
-    src/UserService.cpp
-    src/RequestService.cpp
-    src/createrequestwindow.cpp
-    src/loginwindow.cpp
-    src/dashboardwindow.cpp
+        src/main.cpp
+        src/user.cpp
+        src/RequestManager.cpp
+        src/UserService.cpp
+        src/RequestService.cpp
+        src/createrequestwindow.cpp
+        src/loginwindow.cpp
+        src/dashboardwindow.cpp
 )
 
 set(HEADERS
-    include/loginwindow.h
-    include/dashboardwindow.h
-    include/createrequestwindow.h
+        include/loginwindow.h
+        include/dashboardwindow.h
+        include/createrequestwindow.h
+        include/RequestManager.h
+        src/RequestManager.cpp
 )
 
 add_executable(feedSystem
-    ${SOURCES}
-    ${HEADERS}
-    include/loginwindow.h
+        ${SOURCES}
+        ${HEADERS}
+        include/loginwindow.h
 )
 
 target_include_directories(feedSystem PRIVATE include)

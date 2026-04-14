@@ -1,6 +1,5 @@
 #include "dashboardwindow.h"
 #include "createrequestwindow.h"
-#include "RequestService.h"
 
 #include <QLabel>
 #include <QPushButton>
@@ -11,22 +10,12 @@
 #include <QMessageBox>
 #include <QUuid>
 
-struct Request {
-    QString id;
-    QString ownerId;
-    QString title;
-    QString category;
-    QString location;
-    QString status;
-};
-
-static std::vector<Request> requests;
-
 DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
     : QWidget(parent), currentUser(user) {
+
     titleLabel = new QLabel(
         QString("Welcome, %1 — Live Requests Feed")
-        .arg(QString::fromStdString(currentUser.getDisplayName())),
+            .arg(QString::fromStdString(currentUser.getDisplayName())),
         this
     );
 
@@ -58,19 +47,13 @@ DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
 
         connect(win, &CreateRequestWindow::requestCreated,
                 this, [this](QString title, QString category, QString location) {
-                    Request r;
-                    r.id = QUuid::createUuid().toString();
-                    r.ownerId = QString::fromStdString(currentUser.getId());
-                    r.title = title;
-                    r.category = category;
-                    r.location = location;
-                    r.status = "Open";
 
-                    requests.push_back(r);
-
-                    RequestService service;
-                    service.addRequest(title, category, location,
-                                       QString::fromStdString(currentUser.getId()));
+                    requestManager.addRequest(
+                        title,
+                        category,
+                        location,
+                        QString::fromStdString(currentUser.getId())
+                    );
 
                     refreshRequests();
                 });
@@ -88,7 +71,8 @@ void DashboardWindow::refreshRequests() {
         delete item;
     }
 
-    for (const auto &r: requests) {
+    for (const auto &r : requestManager.getRequests()) {
+
         QFrame *card = new QFrame(this);
         card->setFrameShape(QFrame::StyledPanel);
 
@@ -97,41 +81,31 @@ void DashboardWindow::refreshRequests() {
         QLabel *title = new QLabel(r.title, this);
         QLabel *cat = new QLabel("Category: " + r.category, this);
         QLabel *loc = new QLabel("Location: " + r.location, this);
-        QLabel *status = new QLabel("Status: " + r.status, this);
+
+        QString statusText =
+            (r.status == RequestStatus::Open) ? "Open" :
+            (r.status == RequestStatus::Accepted) ? "Accepted" :
+                                                    "Closed";
+
+        QLabel *status = new QLabel("Status: " + statusText, this);
 
         QPushButton *acceptBtn = new QPushButton("Accept", this);
         QPushButton *closeBtn = new QPushButton("Close", this);
 
-        connect(acceptBtn, &QPushButton::clicked, this, [=]() mutable {
-            if (r.ownerId == QString::fromStdString(currentUser.getId())) {
-                QMessageBox::warning(this, "Error",
-                                     "You cannot accept your own request.");
+        connect(acceptBtn, &QPushButton::clicked, this, [=]() {
+            if (!requestManager.acceptRequest(r.id, QString::fromStdString(currentUser.getId()))) {
+                QMessageBox::warning(this, "Error", "Cannot accept request.");
                 return;
             }
-
-            for (auto &req: requests) {
-                if (req.id == r.id && req.status == "Open") {
-                    req.status = "Accepted";
-                    refreshRequests();
-                    return;
-                }
-            }
+            refreshRequests();
         });
 
-        connect(closeBtn, &QPushButton::clicked, this, [=]() mutable {
-            if (r.ownerId != QString::fromStdString(currentUser.getId())) {
-                QMessageBox::warning(this, "Error",
-                                     "Only owner can close request.");
+        connect(closeBtn, &QPushButton::clicked, this, [=]() {
+            if (!requestManager.closeRequest(r.id, QString::fromStdString(currentUser.getId()))) {
+                QMessageBox::warning(this, "Error", "Cannot close request.");
                 return;
             }
-
-            for (auto &req: requests) {
-                if (req.id == r.id) {
-                    req.status = "Closed";
-                    refreshRequests();
-                    return;
-                }
-            }
+            refreshRequests();
         });
 
         layout->addWidget(title);

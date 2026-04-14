@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "user.h"
+#include "RequestManager.h"
 
 class QLabel;
 class QPushButton;
@@ -16,9 +17,12 @@ public:
 
 private:
     User currentUser;
+
     QLabel *titleLabel;
     QPushButton *newRequestButton;
     QVBoxLayout *requestsLayout;
+
+    RequestManager requestManager;
 
     void refreshRequests();
 };

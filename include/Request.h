@@ -1,4 +1,5 @@
 #pragma once
+
 #include <QString>
 
 enum class RequestStatus {
@@ -8,6 +9,7 @@ enum class RequestStatus {
 };
 
 struct Request {
+    QString id;
     QString title;
     QString category;
     QString location;
