@@ -7,9 +7,6 @@
 using ::testing::Return;
 using ::testing::_;
 
-// =========================
-// USER TESTS
-// =========================
 
 TEST(UserTest, ConstructorSetsNameCorrectly) {
     User u("id123", "Alice");
@@ -33,10 +30,6 @@ TEST(UserTest, SetDisplayNameDoesNotChangeId) {
     EXPECT_EQ(u.getId(), "u1");
 }
 
-// =========================
-// REQUEST MANAGER TESTS
-// =========================
-
 TEST(RequestManagerTest, AddRequestCreatesRequest) {
     RequestManager manager;
 
@@ -51,9 +44,7 @@ TEST(RequestManagerTest, AddRequestCreatesRequest) {
     EXPECT_EQ(requests[0].ownerId, "user1");
 }
 
-// =========================
-// MOCK INTERFACE TEST
-// =========================
+
 
 class IRequestSender {
 public:
@@ -73,12 +64,12 @@ public:
 TEST(RequestTest, SendRequestFailureHandled) {
     MockRequestSender mockSender;
 
-    // Expect the call AND define behavior
+
     EXPECT_CALL(mockSender, sendRequest("Borrow charger", "Borrow Item"))
         .Times(1)
         .WillOnce(Return(false));
 
-    // Act (IMPORTANT: call AFTER expectation)
+
     bool result = mockSender.sendRequest("Borrow charger", "Borrow Item");
 
     EXPECT_FALSE(result);
