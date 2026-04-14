@@ -1,20 +1,17 @@
 #ifndef DASHBOARDWINDOW_H
 #define DASHBOARDWINDOW_H
 
-#include <QWidget>
-
-class QLabel;
-class QPushButton;
-class QVBoxLayout;
+#include "user.h"
 
 class DashboardWindow : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit DashboardWindow(QWidget *parent = nullptr);
+    explicit DashboardWindow(const User& user, QWidget *parent = nullptr);
 
 private:
+    User currentUser;  // add this
     QLabel *titleLabel;
     QPushButton *newRequestButton;
     QVBoxLayout *requestsLayout;
