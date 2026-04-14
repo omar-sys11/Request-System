@@ -10,7 +10,6 @@
 #include <QFont>
 #include <QMessageBox>
 #include <QUuid>
-#include <functional>
 
 struct Request {
     QString id;
@@ -46,84 +45,21 @@ DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
 
     requestsLayout = new QVBoxLayout;
 
-    std::function<void()> refresh;   // ✅ key fix
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addLayout(topLayout);
+    mainLayout->addSpacing(10);
+    mainLayout->addLayout(requestsLayout);
 
-    refresh = [this, &refresh]() {
+    setLayout(mainLayout);
+    setWindowTitle("Dashboard");
+    resize(500, 400);
 
-        QLayoutItem *item;
-        while ((item = requestsLayout->takeAt(0))) {
-            delete item->widget();
-            delete item;
-        }
-
-        for (const auto &r : requests) {
-
-            QFrame *card = new QFrame(this);
-            card->setFrameShape(QFrame::StyledPanel);
-
-            QVBoxLayout *layout = new QVBoxLayout(card);
-
-            QLabel *title = new QLabel(r.title, this);
-            QLabel *cat = new QLabel("Category: " + r.category, this);
-            QLabel *loc = new QLabel("Location: " + r.location, this);
-            QLabel *status = new QLabel("Status: " + r.status, this);
-
-            QPushButton *acceptBtn = new QPushButton("Accept", this);
-            QPushButton *closeBtn = new QPushButton("Close", this);
-
-            connect(acceptBtn, &QPushButton::clicked, this, [=]() mutable {
-
-                if (r.ownerId == QString::fromStdString(currentUser.getId())) {
-                    QMessageBox::warning(this, "Error",
-                                         "You cannot accept your own request.");
-                    return;
-                }
-
-                for (auto &req : requests) {
-                    if (req.id == r.id && req.status == "Open") {
-                        req.status = "Accepted";
-                        refresh();   // ✅ now valid
-                        return;
-                    }
-                }
-            });
-
-            connect(closeBtn, &QPushButton::clicked, this, [=]() mutable {
-
-                if (r.ownerId != QString::fromStdString(currentUser.getId())) {
-                    QMessageBox::warning(this, "Error",
-                                         "Only the owner can close this request.");
-                    return;
-                }
-
-                for (auto &req : requests) {
-                    if (req.id == r.id) {
-                        req.status = "Closed";
-                        refresh();   // ✅ now valid
-                        return;
-                    }
-                }
-            });
-
-            layout->addWidget(title);
-            layout->addWidget(cat);
-            layout->addWidget(loc);
-            layout->addWidget(status);
-            layout->addWidget(acceptBtn);
-            layout->addWidget(closeBtn);
-
-            requestsLayout->addWidget(card);
-        }
-
-        requestsLayout->addStretch();
-    };
-
-    connect(newRequestButton, &QPushButton::clicked, this, [this, &refresh]() {
+    connect(newRequestButton, &QPushButton::clicked, this, [this]() {
 
         CreateRequestWindow *win = new CreateRequestWindow();
 
         connect(win, &CreateRequestWindow::requestCreated,
-                this, [this, &refresh](QString title, QString category, QString location) {
+                this, [this](QString title, QString category, QString location) {
 
             Request r;
             r.id = QUuid::createUuid().toString();
@@ -139,20 +75,81 @@ DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
             service.addRequest(title, category, location,
                                QString::fromStdString(currentUser.getId()));
 
-            refresh();
+            refreshRequests();   
         });
 
         win->show();
     });
 
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addLayout(topLayout);
-    mainLayout->addSpacing(10);
-    mainLayout->addLayout(requestsLayout);
+    refreshRequests();
+}
 
-    setLayout(mainLayout);
-    setWindowTitle("Dashboard");
-    resize(500, 400);
+void DashboardWindow::refreshRequests()
+{
+    QLayoutItem *item;
+    while ((item = requestsLayout->takeAt(0))) {
+        delete item->widget();
+        delete item;
+    }
 
-    refresh();
+    for (const auto &r : requests) {
+
+        QFrame *card = new QFrame(this);
+        card->setFrameShape(QFrame::StyledPanel);
+
+        QVBoxLayout *layout = new QVBoxLayout(card);
+
+        QLabel *title = new QLabel(r.title, this);
+        QLabel *cat = new QLabel("Category: " + r.category, this);
+        QLabel *loc = new QLabel("Location: " + r.location, this);
+        QLabel *status = new QLabel("Status: " + r.status, this);
+
+        QPushButton *acceptBtn = new QPushButton("Accept", this);
+        QPushButton *closeBtn = new QPushButton("Close", this);
+
+        connect(acceptBtn, &QPushButton::clicked, this, [=]() mutable {
+
+            if (r.ownerId == QString::fromStdString(currentUser.getId())) {
+                QMessageBox::warning(this, "Error",
+                                     "You cannot accept your own request.");
+                return;
+            }
+
+            for (auto &req : requests) {
+                if (req.id == r.id && req.status == "Open") {
+                    req.status = "Accepted";
+                    refreshRequests();
+                    return;
+                }
+            }
+        });
+
+        connect(closeBtn, &QPushButton::clicked, this, [=]() mutable {
+
+            if (r.ownerId != QString::fromStdString(currentUser.getId())) {
+                QMessageBox::warning(this, "Error",
+                                     "Only owner can close request.");
+                return;
+            }
+
+            for (auto &req : requests) {
+                if (req.id == r.id) {
+                    req.status = "Closed";
+                    refreshRequests();
+                    return;
+                }
+            }
+        });
+
+        layout->addWidget(title);
+        layout->addWidget(cat);
+        layout->addWidget(loc);
+        layout->addWidget(status);
+        layout->addWidget(acceptBtn);
+        layout->addWidget(closeBtn);
+
+        requestsLayout->addWidget(card);
+    }
+
+    requestsLayout->addStretch();
 }
