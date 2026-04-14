@@ -7,10 +7,14 @@
 #include <QFrame>
 #include <QFont>
 
-DashboardWindow::DashboardWindow(QWidget *parent)
-    : QWidget(parent)
+DashboardWindow::DashboardWindow(const User& user, QWidget *parent)
+    : QWidget(parent), currentUser(user)
 {
-    titleLabel = new QLabel("Live Requests Feed", this);
+    titleLabel = new QLabel(
+        QString("Welcome, %1 — Live Requests Feed")
+        .arg(QString::fromStdString(currentUser.getDisplayName())),
+        this
+    );
     newRequestButton = new QPushButton("New Request", this);
 
     QFont titleFont;
@@ -62,6 +66,7 @@ DashboardWindow::DashboardWindow(QWidget *parent)
     setLayout(mainLayout);
     setWindowTitle("Dashboard");
     resize(500, 400);
+
     connect(newRequestButton, &QPushButton::clicked, this, [this]() {
         CreateRequestWindow *createRequestWindow = new CreateRequestWindow();
 
