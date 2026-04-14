@@ -1,0 +1,63 @@
+# =========================
+# Build directories
+# =========================
+build/
+cmake-build-debug/
+cmake-build-release/
+out/
+bin/
+
+# =========================
+# CMake files
+# =========================
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# =========================
+# Compiled source files
+# =========================
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+*.out
+*.app
+
+# =========================
+# Debug / profiling files
+# =========================
+*.dSYM/
+*.stackdump
+*.gcda
+*.gcno
+*.gcov
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# macOS files
+# =========================
+.DS_Store
+
+# =========================
+# IDE settings
+# =========================
+.vscode/
+.idea/
+*.code-workspace
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.swp
+*~
