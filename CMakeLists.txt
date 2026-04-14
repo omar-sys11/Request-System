@@ -5,14 +5,12 @@ project(feedSystem LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-
-
-find_package(Boost REQUIRED COMPONENTS system)
 
 
 set(APP_SOURCES
@@ -29,7 +27,8 @@ add_executable(feedSystem ${APP_SOURCES})
 
 target_include_directories(feedSystem PRIVATE include)
 
-target_link_libraries(feedSystem PRIVATE Qt6::Widgets Boost::system)
+target_link_libraries(feedSystem PRIVATE Qt6::Widgets)
+
 
 include(FetchContent)
 
@@ -42,7 +41,6 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
-
 
 set(TEST_SOURCES
         tests/request_tests.cpp
