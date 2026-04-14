@@ -1,5 +1,4 @@
 #include "loginwindow.h"
-
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
@@ -7,7 +6,9 @@
 #include <QFormLayout>
 #include <QMessageBox>
 #include <QFont>
+#include <QUuid>
 #include "dashboardwindow.h"
+#include "user.h"
 
 LoginWindow::LoginWindow(QWidget *parent)
     : QWidget(parent)
@@ -74,11 +75,14 @@ void LoginWindow::onConnectButtonClicked()
         return;
     }
 
-    statusLabel->setText("Status: Connected");
-    QMessageBox::information(this, "Connected",
-                             "Connected successfully.");
+    std::string userId = QUuid::createUuid().toString().toStdString();
+    std::string userName = name.toStdString();
+    User currentUser(userId, userName);
 
-    DashboardWindow *dashboard = new DashboardWindow();
+    statusLabel->setText("Status: Connected");
+    QMessageBox::information(this, "Connected", "Connected successfully.");
+
+    DashboardWindow *dashboard = new DashboardWindow(currentUser);
     dashboard->show();
 
     this->close();
