@@ -1,0 +1,5 @@
+/Users/yassineahmedmostafa/request-system/build/CMakeFiles/feedSystem.dir
+/Users/yassineahmedmostafa/request-system/build/CMakeFiles/edit_cache.dir
+/Users/yassineahmedmostafa/request-system/build/CMakeFiles/rebuild_cache.dir
+/Users/yassineahmedmostafa/request-system/build/CMakeFiles/feedSystem_autogen_timestamp_deps.dir
+/Users/yassineahmedmostafa/request-system/build/CMakeFiles/feedSystem_autogen.dir

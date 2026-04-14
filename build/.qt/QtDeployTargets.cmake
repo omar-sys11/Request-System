@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_feedSystem_FILE /Users/yassineahmedmostafa/request-system/build/feedSystem)
+set(__QT_DEPLOY_TARGET_feedSystem_TYPE EXECUTABLE)
