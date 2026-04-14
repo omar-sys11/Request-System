@@ -11,9 +11,10 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
-# =========================
-# GUI APP
-# =========================
+
+find_package(Boost REQUIRED COMPONENTS system)
+
+
 set(APP_SOURCES
         src/main.cpp
         src/user.cpp
@@ -28,11 +29,8 @@ add_executable(feedSystem ${APP_SOURCES})
 
 target_include_directories(feedSystem PRIVATE include)
 
-target_link_libraries(feedSystem PRIVATE Qt6::Widgets)
+target_link_libraries(feedSystem PRIVATE Qt6::Widgets Boost::system)
 
-# =========================
-# GOOGLE TEST (FETCHCONTENT)
-# =========================
 include(FetchContent)
 
 FetchContent_Declare(
@@ -41,14 +39,11 @@ FetchContent_Declare(
 )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-# =========================
-# TEST EXECUTABLE
-# =========================
+
 set(TEST_SOURCES
         tests/request_tests.cpp
         src/user.cpp
@@ -62,9 +57,8 @@ target_include_directories(runTests PRIVATE include)
 target_link_libraries(runTests
         PRIVATE
         GTest::gtest
-        GTest::gtest_main
         GTest::gmock
-        GTest::gmock_main
+        GTest::gtest_main
 )
 
 include(GoogleTest)
