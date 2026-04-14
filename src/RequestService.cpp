@@ -9,6 +9,7 @@ void RequestService::addRequest(const QString& title,
     r.title = title;
     r.category = category;
     r.location = location;
+    r.ownerId = ownerId; 
     r.status = RequestStatus::Open;
 
     requests.push_back(r);
