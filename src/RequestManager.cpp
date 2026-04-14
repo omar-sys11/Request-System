@@ -1,4 +1,5 @@
 #include "RequestManager.h"
+#include <QUuid>
 
 const std::vector<Request>& RequestManager::getRequests() const {
     return requests;
