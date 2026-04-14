@@ -5,14 +5,18 @@ project(feedSystem LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
+# =========================
+# Qt Setup (IMPORTANT FIX)
+# =========================
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
-
+# =========================
+# GUI SOURCES
+# =========================
 set(APP_SOURCES
         src/main.cpp
         src/user.cpp
@@ -23,13 +27,24 @@ set(APP_SOURCES
         src/dashboardwindow.cpp
 )
 
-add_executable(feedSystem ${APP_SOURCES})
+set(APP_HEADERS
+        include/loginwindow.h
+        include/createrequestwindow.h
+        include/dashboardwindow.h
+)
+
+add_executable(feedSystem
+        ${APP_SOURCES}
+        ${APP_HEADERS}   # 🔥 IMPORTANT FIX (forces MOC processing)
+)
 
 target_include_directories(feedSystem PRIVATE include)
 
 target_link_libraries(feedSystem PRIVATE Qt6::Widgets)
 
-
+# =========================
+# GOOGLE TEST
+# =========================
 include(FetchContent)
 
 FetchContent_Declare(
