@@ -47,3 +47,9 @@ TEST(RequestTest, SendIsCalledOnSubmit) {
 
     EXPECT_TRUE(result);
 }
+
+TEST(UserTest, SetDisplayNameDoesNotChangeId) {
+    User u("u1", "Alice");
+    u.setDisplayName("Bob");
+    EXPECT_EQ(u.getId(), "u1");
+}
