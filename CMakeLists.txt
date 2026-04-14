@@ -24,9 +24,19 @@ set(APP_SOURCES
 add_executable(feedSystem ${APP_SOURCES})
 
 target_include_directories(feedSystem PRIVATE include)
+
 target_link_libraries(feedSystem PRIVATE Qt6::Widgets)
 
-find_package(GTest REQUIRED)
+include(FetchContent)
+
+FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+)
+
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(googletest)
 
 set(TEST_SOURCES
     tests/request_tests.cpp
@@ -40,6 +50,9 @@ target_include_directories(runTests PRIVATE include)
 
 target_link_libraries(runTests
     PRIVATE
-    GTest::GTest
-    GTest::Main
+    GTest::gtest
+    GTest::gtest_main
 )
+
+include(GoogleTest)
+gtest_discover_tests(runTests)
