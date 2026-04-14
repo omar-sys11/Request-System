@@ -21,11 +21,18 @@ std::vector<Request>& RequestService::getRequests()
     return requests;
 }
 
-void RequestService::acceptRequest(int index)
+void RequestService::acceptRequest(int index, const QString& userId)
 {
     if (index < 0 || index >= (int)requests.size()) return;
 
-    requests[index].status = RequestStatus::Accepted;
+    Request &req = requests[index];
+
+    if (req.ownerId == userId) {
+        qDebug() << "Cannot accept your own request";
+        return;
+    }
+
+    req.status = RequestStatus::Accepted;
 }
 
 void RequestService::closeRequest(int index)
