@@ -19,11 +19,18 @@ set(APP_SOURCES
         src/createrequestwindow.cpp
         src/loginwindow.cpp
         src/dashboardwindow.cpp
+        include/createrequestwindow.h
+        include/dashboardwindow.h
+        include/loginwindow.h
 )
 
 add_executable(feedSystem ${APP_SOURCES})
 
 target_include_directories(feedSystem PRIVATE include)
+
+set_target_properties(feedSystem PROPERTIES
+        AUTOMOC_PATH_PREFIX ON
+)
 
 target_link_libraries(feedSystem PRIVATE Qt6::Widgets Qt6::Core)
 
