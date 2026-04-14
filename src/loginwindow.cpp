@@ -9,6 +9,7 @@
 #include <QUuid>
 #include "dashboardwindow.h"
 #include "user.h"
+#include "UserService.h"
 
 LoginWindow::LoginWindow(QWidget *parent)
     : QWidget(parent) {
