@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include "RequestManager.h"
 #include "user.h"
 
 TEST(UserTest, ConstructorSetsNameCorrectly) {
@@ -34,18 +35,18 @@ public:
                 (override));
 };
 
-TEST(RequestTest, SendIsCalledOnSubmit) {
-    MockRequestSender mockSender;
+TEST(RequestManagerTest, AddRequestCreatesRequest) {
+    RequestManager manager;
 
-    
-    EXPECT_CALL(mockSender, sendRequest("Help me", "Study Help"))
-        .Times(1)
-        .WillOnce(testing::Return(true));
+    manager.addRequest("Help me", "Study Help", "Cairo", "user1");
 
-   
-    bool result = mockSender.sendRequest("Help me", "Study Help");
+    const auto& requests = manager.getRequests();
 
-    EXPECT_TRUE(result);
+    ASSERT_EQ(requests.size(), 1);
+    EXPECT_EQ(requests[0].title, "Help me");
+    EXPECT_EQ(requests[0].category, "Study Help");
+    EXPECT_EQ(requests[0].location, "Cairo");
+    EXPECT_EQ(requests[0].ownerId, "user1");
 }
 
 TEST(UserTest, SetDisplayNameDoesNotChangeId) {
