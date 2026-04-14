@@ -16,7 +16,6 @@ set(SOURCES
         src/user.cpp
         src/RequestManager.cpp
         src/UserService.cpp
-        src/RequestService.cpp
         src/createrequestwindow.cpp
         src/loginwindow.cpp
         src/dashboardwindow.cpp
@@ -26,7 +25,6 @@ set(HEADERS
         include/loginwindow.h
         include/dashboardwindow.h
         include/createrequestwindow.h
-        include/RequestManager.h
         include/RequestManager.h
 
 )
