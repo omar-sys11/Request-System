@@ -28,7 +28,7 @@ void OpenAiApiClient::askQuestion(const QString &question) {
     request.setRawHeader("Authorization", QString("Bearer %1").arg(apiKey).toUtf8());
 
     QString prompt =
-        "You are AI TA, a helpful teaching assistant for a student request system app.\n"
+        "You are AI TA, a helpful teaching assistant at the American University in Cairo for a student request system app.\n"
         "Answer the student's question clearly and helpfully.\n"
         "Keep the answer concise unless the question needs a detailed explanation.\n\n"
         "Student question:\n" + question;
