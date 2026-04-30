@@ -15,6 +15,7 @@ set(APP_HEADERS
         include/createrequestwindow.h
         include/dashboardwindow.h
         include/loginwindow.h
+        include/OpenAiAPIClient.h
 )
 
 set_source_files_properties(${APP_HEADERS} PROPERTIES AUTOMOC ON)
@@ -27,13 +28,14 @@ set(APP_SOURCES
         src/createrequestwindow.cpp
         src/loginwindow.cpp
         src/dashboardwindow.cpp
+        src/OpenAiAPIClient.cpp
 )
 
 add_executable(feedSystem ${APP_SOURCES} ${APP_HEADERS})
 
 target_include_directories(feedSystem PRIVATE include)
 
-target_link_libraries(feedSystem PRIVATE Qt6::Widgets Qt6::Core)
+target_link_libraries(feedSystem PRIVATE Qt6::Widgets Qt6::Core Qt6::Network)
 
 include(FetchContent)
 
