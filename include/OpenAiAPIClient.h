@@ -13,14 +13,14 @@ class OpenAiApiClient : public QObject {
 public:
     explicit OpenAiApiClient(QObject *parent = nullptr);
 
-    void suggestCategory(const QString &title, const QString &location);
+    void askQuestion(const QString &question);
 
 signals:
-    void categorySuggested(const QString &category);
+    void answerReceived(const QString &answer);
     void apiError(const QString &message);
 
 private slots:
-    void onSuggestCategoryFinished(QNetworkReply *reply);
+    void onAskQuestionFinished(QNetworkReply *reply);
 
 private:
     QNetworkAccessManager *networkManager;
