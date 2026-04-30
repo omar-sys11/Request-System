@@ -19,6 +19,10 @@ private:
     QLabel *titleLabel;
     QPushButton *newRequestButton;
     QVBoxLayout *requestsLayout;
+
+    RequestManager requestManager;
+
+    void refreshRequests();
 };
 
 #endif
