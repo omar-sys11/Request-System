@@ -7,6 +7,7 @@ class QLabel;
 class QLineEdit;
 class QComboBox;
 class QPushButton;
+class OpenAiApiClient;
 
 class CreateRequestWindow : public QWidget {
     Q_OBJECT
@@ -19,6 +20,8 @@ signals:
 
 private slots:
     void onSubmitClicked();
+    void onCategorySuggested(const QString &category);
+    void onApiError(const QString &message);
 
 private:
     QLabel *titleLabel;
@@ -31,6 +34,9 @@ private:
     QLineEdit *locationEdit;
 
     QPushButton *submitButton;
+    QPushButton *suggestCategoryButton;
+
+    OpenAiApiClient *openAiClient;
 };
 
 #endif
