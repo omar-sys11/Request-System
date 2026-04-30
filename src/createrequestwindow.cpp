@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QFont>
 #include <QFrame>
+#include <QTextEdit>
 
 CreateRequestWindow::CreateRequestWindow(QWidget *parent)
     : QWidget(parent) {
@@ -17,6 +18,7 @@ CreateRequestWindow::CreateRequestWindow(QWidget *parent)
     categoryLabel = new QLabel("Category:", this);
     locationLabel = new QLabel("Location:", this);
     statusLabel = new QLabel("Fill in the request details.", this);
+    aiQuestionLabel = new QLabel("Ask AI TA a question:", this);
 
     QFont titleFont;
     titleFont.setPointSize(14);
@@ -34,8 +36,12 @@ CreateRequestWindow::CreateRequestWindow(QWidget *parent)
     categoryComboBox->addItem("Quick Question");
     categoryComboBox->addItem("Tech Help");
 
-    suggestCategoryButton = new QPushButton("Ask AI TA", this);
-    suggestCategoryButton->setMinimumHeight(35);
+    aiQuestionEdit = new QTextEdit(this);
+    aiQuestionEdit->setPlaceholderText("Example: How should I write a good request?");
+    aiQuestionEdit->setMinimumHeight(70);
+
+    askAiButton = new QPushButton("Ask AI TA", this);
+    askAiButton->setMinimumHeight(35);
 
     submitButton = new QPushButton("Submit Request", this);
     submitButton->setMinimumHeight(35);
@@ -85,25 +91,32 @@ CreateRequestWindow::CreateRequestWindow(QWidget *parent)
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->setSpacing(12);
     mainLayout->setContentsMargins(20, 20, 20, 20);
+
     mainLayout->addWidget(titleLabel);
     mainLayout->addLayout(formLayout);
-    mainLayout->addWidget(suggestCategoryButton);
+
+    mainLayout->addSpacing(10);
+    mainLayout->addWidget(aiQuestionLabel);
+    mainLayout->addWidget(aiQuestionEdit);
+    mainLayout->addWidget(askAiButton);
     mainLayout->addWidget(aiResponseBox);
+
+    mainLayout->addSpacing(10);
     mainLayout->addWidget(submitButton);
     mainLayout->addWidget(statusLabel);
 
     setLayout(mainLayout);
     setWindowTitle("Create Request");
-    resize(450, 350);
+    resize(500, 500);
 
     connect(submitButton, &QPushButton::clicked,
             this, &CreateRequestWindow::onSubmitClicked);
 
-    connect(suggestCategoryButton, &QPushButton::clicked,
-            this, &CreateRequestWindow::onSuggestCategoryClicked);
+    connect(askAiButton, &QPushButton::clicked,
+            this, &CreateRequestWindow::onAskAiClicked);
 
-    connect(openAiClient, &OpenAiApiClient::categorySuggested,
-            this, &CreateRequestWindow::onCategorySuggested);
+    connect(openAiClient, &OpenAiApiClient::answerReceived,
+            this, &CreateRequestWindow::onAiAnswerReceived);
 
     connect(openAiClient, &OpenAiApiClient::apiError,
             this, &CreateRequestWindow::onApiError);
@@ -131,13 +144,12 @@ void CreateRequestWindow::onSubmitClicked() {
                              "Your request was submitted.");
 }
 
-void CreateRequestWindow::onSuggestCategoryClicked() {
-    QString title = titleEdit->text().trimmed();
-    QString location = locationEdit->text().trimmed();
+void CreateRequestWindow::onAskAiClicked() {
+    QString question = aiQuestionEdit->toPlainText().trimmed();
 
-    if (title.isEmpty()) {
-        QMessageBox::warning(this, "Missing Title",
-                             "Please enter a request title before asking AI TA.");
+    if (question.isEmpty()) {
+        QMessageBox::warning(this, "Missing Question",
+                             "Please type a question for AI TA.");
         return;
     }
 
@@ -145,44 +157,27 @@ void CreateRequestWindow::onSuggestCategoryClicked() {
     aiResponseBox->show();
 
     statusLabel->setText("Asking AI TA...");
-    suggestCategoryButton->setEnabled(false);
+    askAiButton->setEnabled(false);
 
-    openAiClient->suggestCategory(title, location);
+    openAiClient->askQuestion(question);
 }
 
-void CreateRequestWindow::onCategorySuggested(const QString &category) {
-    int index = categoryComboBox->findText(category, Qt::MatchFixedString);
-
-    if (index >= 0) {
-        categoryComboBox->setCurrentIndex(index);
-
-        aiTextLabel->setText(
-            "I suggest using the category: <b>" + category + "</b>"
-        );
-
-        statusLabel->setText("AI TA suggested a category.");
-    } else {
-        categoryComboBox->setCurrentIndex(0);
-
-        aiTextLabel->setText(
-            "I could not match the AI response to one of the categories, "
-            "so I selected <b>Study Help</b> as the default."
-        );
-
-        statusLabel->setText("AI TA response did not match a category.");
-    }
-
+void CreateRequestWindow::onAiAnswerReceived(const QString &answer) {
+    aiTextLabel->setText(answer.toHtmlEscaped().replace("\n", "<br>"));
     aiResponseBox->show();
-    suggestCategoryButton->setEnabled(true);
+
+    statusLabel->setText("AI TA answered your question.");
+    askAiButton->setEnabled(true);
 }
 
 void CreateRequestWindow::onApiError(const QString &message) {
     aiTextLabel->setText(
-        "Sorry, I could not get a response right now.<br><br>" + message
+        "Sorry, I could not get a response right now.<br><br>" +
+        message.toHtmlEscaped().replace("\n", "<br>")
     );
 
     aiResponseBox->show();
 
     statusLabel->setText("AI TA request failed.");
-    suggestCategoryButton->setEnabled(true);
+    askAiButton->setEnabled(true);
 }
