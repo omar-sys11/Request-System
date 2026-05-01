@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
+
 project(feedSystem LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -8,27 +9,41 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Network)
 
-add_executable(feedSystem
+set(APP_HEADERS
+    include/createrequestwindow.h
+    include/dashboardwindow.h
+    include/loginwindow.h
+    include/OpenAIAPIClient.h
+)
+
+set_source_files_properties(${APP_HEADERS} PROPERTIES AUTOMOC ON)
+
+set(APP_SOURCES
     src/main.cpp
     src/user.cpp
+    src/UserService.cpp
+    src/RequestManager.cpp
     src/createrequestwindow.cpp
     src/loginwindow.cpp
     src/dashboardwindow.cpp
-    include/loginwindow.h
-    include/dashboardwindow.h
-    include/createrequestwindow.h
+    src/OpenAIAPIClient.cpp
 )
+
+add_executable(feedSystem ${APP_SOURCES} ${APP_HEADERS})
 
 target_include_directories(feedSystem PRIVATE include)
-target_link_libraries(feedSystem PRIVATE Qt6::Widgets)
+
+target_link_libraries(feedSystem PRIVATE Qt6::Widgets Qt6::Core Qt6::Network)
 
 include(FetchContent)
+
 FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    googletest
+    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
 )
+
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
@@ -39,6 +54,7 @@ add_executable(request_tests
 )
 
 target_include_directories(request_tests PRIVATE include)
+
 target_link_libraries(request_tests PRIVATE GTest::gtest_main GTest::gmock)
 
 include(GoogleTest)
