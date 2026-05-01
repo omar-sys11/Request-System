@@ -7,25 +7,11 @@
 #include <QHBoxLayout>
 #include <QFrame>
 #include <QFont>
-#include <QMessageBox>
-#include <QUuid>
 
 DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
-    : QWidget(parent), currentUser(user) {
-
-    titleLabel = new QLabel(
-        QString("Welcome, %1 — Live Requests Feed")
-            .arg(QString::fromStdString(currentUser.getDisplayName())),
-        this
-    );
-
-DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
-    : QWidget(parent), currentUser(user) {
-    titleLabel = new QLabel(
-        QString("Welcome, %1 — Live Requests Feed")
-        .arg(QString::fromStdString(currentUser.getDisplayName())),
-        this
-    );
+    : QWidget(parent), currentUser(user)
+{
+    titleLabel = new QLabel("Live Requests Feed", this);
     newRequestButton = new QPushButton("New Request", this);
 
     QFont titleFont;
@@ -40,6 +26,12 @@ DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
 
     requestsLayout = new QVBoxLayout;
 
+    addRequestCard("Need calculus notes", "Study Help", "HUSS Building");
+    addRequestCard("Looking for a study partner", "Study Partner", "Library");
+    addRequestCard("Need a charger urgently", "Borrow Item", "Dorm 5");
+
+    requestsLayout->addStretch();
+
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addLayout(topLayout);
     mainLayout->addSpacing(10);
@@ -50,75 +42,25 @@ DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
     resize(500, 400);
 
     connect(newRequestButton, &QPushButton::clicked, this, [this]() {
-        CreateRequestWindow *win = new CreateRequestWindow();
+        CreateRequestWindow *createRequestWindow = new CreateRequestWindow();
 
-        connect(win, &CreateRequestWindow::requestCreated,
-                this, [this](QString title, QString category, QString location) {
-                    QFrame *newRequest = new QFrame(this);
-                    newRequest->setFrameShape(QFrame::StyledPanel);
+        connect(createRequestWindow, &CreateRequestWindow::requestSubmitted,
+                this, &DashboardWindow::addRequestCard);
 
-                    refreshRequests();
-                });
-
-        win->show();
+        createRequestWindow->show();
     });
-
-    refreshRequests();
 }
 
-void DashboardWindow::refreshRequests() {
-    QLayoutItem *item;
-    while ((item = requestsLayout->takeAt(0))) {
-        delete item->widget();
-        delete item;
-    }
+void DashboardWindow::addRequestCard(QString title, QString category, QString location)
+{
+    QFrame *requestCard = new QFrame(this);
+    requestCard->setFrameShape(QFrame::StyledPanel);
 
-    for (const auto &r : requestManager.getRequests()) {
+    QVBoxLayout *cardLayout = new QVBoxLayout(requestCard);
+    cardLayout->addWidget(new QLabel(title, requestCard));
+    cardLayout->addWidget(new QLabel("Category: " + category, requestCard));
+    cardLayout->addWidget(new QLabel("Location: " + location, requestCard));
+    cardLayout->addWidget(new QLabel("Status: Open", requestCard));
 
-        QFrame *card = new QFrame(this);
-        card->setFrameShape(QFrame::StyledPanel);
-
-        QVBoxLayout *layout = new QVBoxLayout(card);
-
-        QLabel *title = new QLabel(r.title, this);
-        QLabel *cat = new QLabel("Category: " + r.category, this);
-        QLabel *loc = new QLabel("Location: " + r.location, this);
-
-        QString statusText =
-            (r.status == RequestStatus::Open) ? "Open" :
-            (r.status == RequestStatus::Accepted) ? "Accepted" :
-                                                    "Closed";
-
-        QLabel *status = new QLabel("Status: " + statusText, this);
-
-        QPushButton *acceptBtn = new QPushButton("Accept", this);
-        QPushButton *closeBtn = new QPushButton("Close", this);
-
-        connect(acceptBtn, &QPushButton::clicked, this, [=]() {
-            if (!requestManager.acceptRequest(r.id, QString::fromStdString(currentUser.getId()))) {
-                QMessageBox::warning(this, "Error", "Cannot accept request.");
-                return;
-            }
-            refreshRequests();
-        });
-
-        connect(closeBtn, &QPushButton::clicked, this, [=]() {
-            if (!requestManager.closeRequest(r.id, QString::fromStdString(currentUser.getId()))) {
-                QMessageBox::warning(this, "Error", "Cannot close request.");
-                return;
-            }
-            refreshRequests();
-        });
-
-        layout->addWidget(title);
-        layout->addWidget(cat);
-        layout->addWidget(loc);
-        layout->addWidget(status);
-        layout->addWidget(acceptBtn);
-        layout->addWidget(closeBtn);
-
-        requestsLayout->addWidget(card);
-    }
-
-    requestsLayout->addStretch();
+    requestsLayout->insertWidget(0, requestCard);
 }

@@ -15,10 +15,12 @@ set(APP_HEADERS
     include/createrequestwindow.h
     include/dashboardwindow.h
     include/loginwindow.h
-    include/OpenAIAPIClient.h
+    include/OpenAiAPIClient.h
+    include/Request.h
+    include/RequestManager.h
+    include/user.h
+    include/UserService.h
 )
-
-set_source_files_properties(${APP_HEADERS} PROPERTIES AUTOMOC ON)
 
 set(APP_SOURCES
     src/main.cpp
@@ -28,14 +30,21 @@ set(APP_SOURCES
     src/createrequestwindow.cpp
     src/loginwindow.cpp
     src/dashboardwindow.cpp
-    src/OpenAIAPIClient.cpp
+    src/OpenAiAPIClient.cpp
 )
 
-add_executable(feedSystem ${APP_SOURCES} ${APP_HEADERS})
+add_executable(feedSystem
+    ${APP_SOURCES}
+    ${APP_HEADERS}
+)
 
 target_include_directories(feedSystem PRIVATE include)
 
-target_link_libraries(feedSystem PRIVATE Qt6::Widgets Qt6::Core Qt6::Network)
+target_link_libraries(feedSystem PRIVATE
+    Qt6::Widgets
+    Qt6::Core
+    Qt6::Network
+)
 
 include(FetchContent)
 
@@ -51,11 +60,19 @@ enable_testing()
 add_executable(request_tests
     tests/request_tests.cpp
     src/user.cpp
+    src/UserService.cpp
+    src/RequestManager.cpp
 )
 
 target_include_directories(request_tests PRIVATE include)
 
-target_link_libraries(request_tests PRIVATE GTest::gtest_main GTest::gmock)
+target_link_libraries(request_tests PRIVATE
+    Qt6::Widgets
+    Qt6::Core
+    Qt6::Network
+    GTest::gtest_main
+    GTest::gmock
+)
 
 include(GoogleTest)
 gtest_discover_tests(request_tests)

@@ -8,7 +8,8 @@ class QLabel;
 class QPushButton;
 class QVBoxLayout;
 
-class DashboardWindow : public QWidget {
+class DashboardWindow : public QWidget
+{
     Q_OBJECT
 
 public:
@@ -20,9 +21,8 @@ private:
     QPushButton *newRequestButton;
     QVBoxLayout *requestsLayout;
 
-    RequestManager requestManager;
-
-    void refreshRequests();
+private slots:
+    void addRequestCard(QString title, QString category, QString location);
 };
 
-#endif
+#endif // DASHBOARDWINDOW_H
