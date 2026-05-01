@@ -10,12 +10,14 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Core Network)
+find_package(Boost REQUIRED)
 
 set(APP_HEADERS
         include/createrequestwindow.h
         include/dashboardwindow.h
         include/loginwindow.h
         include/OpenAiAPIClient.h
+	include/networkclient.h
 )
 
 set_source_files_properties(${APP_HEADERS} PROPERTIES AUTOMOC ON)
@@ -29,6 +31,7 @@ set(APP_SOURCES
         src/loginwindow.cpp
         src/dashboardwindow.cpp
         src/OpenAiAPIClient.cpp
+	src/networkclient.cpp
 )
 
 add_executable(feedSystem ${APP_SOURCES} ${APP_HEADERS})
@@ -36,6 +39,10 @@ add_executable(feedSystem ${APP_SOURCES} ${APP_HEADERS})
 target_include_directories(feedSystem PRIVATE include)
 
 target_link_libraries(feedSystem PRIVATE Qt6::Widgets Qt6::Core Qt6::Network)
+
+add_executable(server src/server.cpp)
+target_include_directories(server PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_libraries(server PRIVATE pthread)
 
 include(FetchContent)
 

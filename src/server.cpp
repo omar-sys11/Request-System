@@ -1,31 +1,62 @@
 #include <iostream>
+#include <string>
+#include <vector>
+#include <thread>
+#include <mutex>
 #include <boost/asio.hpp>
 using namespace std;
 using boost::asio::ip::tcp;
 
 #define PORT 12345
-#define MAX_MSG 1024
+#define MAX_MSG 4096
 
-void handleClient(tcp::socket &sock) {
+vector<tcp::socket*> clients;
+mutex clientsMutex;
+
+void broadcast(const string& msg, tcp::socket* sender) {
+    lock_guard<mutex> lock(clientsMutex);
+    for (int i = 0; i < clients.size(); i++) {
+        if (clients[i] != sender) {
+            boost::system::error_code err;
+            boost::asio::write(*clients[i], boost::asio::buffer(msg), err);
+            if (err) {
+                cout << "broadcast error to a client: " << err.message() << endl;
+            }
+        }
+    }
+}
+
+void removeClient(tcp::socket* sock) {
+    lock_guard<mutex> lock(clientsMutex);
+    for (int i = 0; i < clients.size(); i++) {
+        if (clients[i] == sock) {
+            clients.erase(clients.begin() + i);
+            break;
+        }
+    }
+}
+
+void handleClient(tcp::socket* sock) {
     char buf[MAX_MSG];
-    boost::system::error_code err;
 
-    int bytesRead = sock.read_some(boost::asio::buffer(buf, MAX_MSG), err);
+    while (true) {
+        boost::system::error_code err;
+        int bytesRead = sock->read_some(boost::asio::buffer(buf, MAX_MSG), err);
 
-    if (err) {
-        cout << "Read error: " << err.message() << endl;
-        return;
+        if (err) {
+            cout << "client disconnected: " << err.message() << endl;
+            break;
+        }
+
+        buf[bytesRead] = '\0';
+        string msg(buf);
+        cout << "received: " << msg << endl;
+
+        broadcast(msg, sock);
     }
 
-    buf[bytesRead] = '\0';
-    cout << "Client says: " << buf << endl;
-
-    string response = "Hello from server! Got your message. ";
-    boost::asio::write(sock, boost::asio::buffer(response), err);
-
-    if (err) {
-        cout << "write error: " << err.message() << endl;
-    }
+    removeClient(sock);
+    delete sock;
 }
 
 int main() {
@@ -35,12 +66,18 @@ int main() {
     cout << "server listening on port " << PORT << endl;
 
     while (true) {
-        tcp::socket sock(io);
-        acceptor.accept(sock);
+        tcp::socket* sock = new tcp::socket(io);
+        acceptor.accept(*sock);
 
-        cout << "client connected" << endl;
-        handleClient(sock);
-        cout << "Complete, waiting for the next client" << endl;
+        cout << "new client connected!" << endl;
+
+       {
+            lock_guard<mutex> lock(clientsMutex);
+            clients.push_back(sock);
+        }
+
+        thread t(handleClient, sock);
+        t.detach();
     }
 
     return 0;
