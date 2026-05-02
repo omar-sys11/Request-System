@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "user.h"
+#include "databasemanager.h"
 
 class QLabel;
 class QPushButton;
@@ -20,6 +21,11 @@ private:
     QLabel *titleLabel;
     QPushButton *newRequestButton;
     QVBoxLayout *requestsLayout;
+
+    DatabaseManager databaseManager;
+
+    void displayRequestCard(QString title, QString category, QString location, QString status);
+    void loadRequestsFromDatabase();
 
 private slots:
     void addRequestCard(QString title, QString category, QString location);

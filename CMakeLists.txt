@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Core Network)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Network Sql)
 
 set(APP_HEADERS
     include/createrequestwindow.h
@@ -20,6 +20,7 @@ set(APP_HEADERS
     include/RequestManager.h
     include/user.h
     include/UserService.h
+    include/databasemanager.h
 )
 
 set(APP_SOURCES
@@ -31,6 +32,7 @@ set(APP_SOURCES
     src/loginwindow.cpp
     src/dashboardwindow.cpp
     src/OpenAiAPIClient.cpp
+    src/databasemanager.cpp
 )
 
 add_executable(feedSystem
@@ -44,6 +46,7 @@ target_link_libraries(feedSystem PRIVATE
     Qt6::Widgets
     Qt6::Core
     Qt6::Network
+    Qt6::Sql
 )
 
 include(FetchContent)
