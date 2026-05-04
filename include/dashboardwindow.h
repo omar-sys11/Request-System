@@ -17,10 +17,10 @@ public:
 
 private:
     User currentUser;
+
     QLabel *titleLabel;
     QPushButton *newRequestButton;
     QVBoxLayout *requestsLayout;
-
 
     void displayRequestCard(QString title, QString category, QString location, QString status);
 

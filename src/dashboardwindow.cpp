@@ -7,6 +7,7 @@
 #include <QHBoxLayout>
 #include <QFrame>
 #include <QFont>
+#include <Qt>
 
 DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
     : QWidget(parent), currentUser(user)
@@ -30,11 +31,14 @@ DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
     topLayout->addWidget(newRequestButton);
 
     requestsLayout = new QVBoxLayout;
+    requestsLayout->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+    requestsLayout->setSpacing(10);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addLayout(topLayout);
     mainLayout->addSpacing(10);
     mainLayout->addLayout(requestsLayout);
+    mainLayout->addStretch();
 
     setLayout(mainLayout);
     setWindowTitle("Dashboard");
@@ -54,14 +58,33 @@ void DashboardWindow::displayRequestCard(QString title, QString category, QStrin
 {
     QFrame *requestCard = new QFrame(this);
     requestCard->setFrameShape(QFrame::StyledPanel);
+    requestCard->setFixedSize(420, 130);
+
+    requestCard->setStyleSheet(
+        "QFrame {"
+        "   border: 1px solid #bfbfbf;"
+        "   border-radius: 8px;"
+        "   background-color: #ffffff;"
+        "}"
+    );
 
     QVBoxLayout *cardLayout = new QVBoxLayout(requestCard);
-    cardLayout->addWidget(new QLabel(title, requestCard));
-    cardLayout->addWidget(new QLabel("Category: " + category, requestCard));
-    cardLayout->addWidget(new QLabel("Location: " + location, requestCard));
-    cardLayout->addWidget(new QLabel("Status: " + status, requestCard));
+    cardLayout->setContentsMargins(12, 10, 12, 10);
+    cardLayout->setSpacing(6);
 
-    requestsLayout->insertWidget(0, requestCard);
+    QLabel *titleText = new QLabel(title, requestCard);
+    QLabel *categoryText = new QLabel("Category: " + category, requestCard);
+    QLabel *locationText = new QLabel("Location: " + location, requestCard);
+    QLabel *statusText = new QLabel("Status: " + status, requestCard);
+
+    titleText->setStyleSheet("font-weight: bold; font-size: 14px;");
+
+    cardLayout->addWidget(titleText);
+    cardLayout->addWidget(categoryText);
+    cardLayout->addWidget(locationText);
+    cardLayout->addWidget(statusText);
+
+    requestsLayout->insertWidget(0, requestCard, 0, Qt::AlignHCenter);
 }
 
 void DashboardWindow::addRequestCard(QString title, QString category, QString location)
