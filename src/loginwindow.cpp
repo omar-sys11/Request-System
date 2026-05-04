@@ -73,6 +73,40 @@ LoginWindow::LoginWindow(QWidget *parent)
     setWindowTitle("Login");
     resize(380, 280);
 
+    setStyleSheet(
+        "QWidget {"
+        "   background-color: #f5f5f5;"
+        "   color: #000000;"
+        "}"
+        "QLabel {"
+        "   color: #000000;"
+        "}"
+        "QLineEdit {"
+        "   background-color: #ffffff;"
+        "   color: #000000;"
+        "   border: 1px solid #999999;"
+        "   border-radius: 4px;"
+        "   padding: 4px;"
+        "}"
+        "QLineEdit:focus {"
+        "   border: 1px solid #4a90e2;"
+        "}"
+        "QPushButton {"
+        "   color: #000000;"
+        "   background-color: #e0e0e0;"
+        "   border: 1px solid #888888;"
+        "   border-radius: 4px;"
+        "   padding: 6px;"
+        "}"
+        "QPushButton:hover {"
+        "   background-color: #d0d0d0;"
+        "}"
+        "QPushButton:disabled {"
+        "   color: #777777;"
+        "   background-color: #eeeeee;"
+        "}"
+    );
+
     if (!databaseManager.initialize()) {
         QMessageBox::warning(this, "Database Error",
                              "Could not initialize database:\n" + databaseManager.getLastError());

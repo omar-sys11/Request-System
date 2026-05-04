@@ -78,11 +78,12 @@ void DashboardWindow::addRequestCard(QString title, QString category, QString lo
 void DashboardWindow::displayRequestCard(QString title, QString category, QString location, QString status)
 {
     QFrame *requestCard = new QFrame(this);
-    requestCard->setFrameShape(QFrame::StyledPanel);
+    requestCard->setObjectName("requestCard");
+    requestCard->setFrameShape(QFrame::NoFrame);
     requestCard->setFixedSize(420, 130);
 
     requestCard->setStyleSheet(
-        "QFrame {"
+        "#requestCard {"
         "   border: 1px solid #bfbfbf;"
         "   border-radius: 8px;"
         "   background-color: #ffffff;"
@@ -98,7 +99,27 @@ void DashboardWindow::displayRequestCard(QString title, QString category, QStrin
     QLabel *locationText = new QLabel("Location: " + location, requestCard);
     QLabel *statusText = new QLabel("Status: " + status, requestCard);
 
-    titleText->setStyleSheet("font-weight: bold; font-size: 14px;");
+    QString normalLabelStyle =
+        "QLabel {"
+        "   color: #000000;"
+        "   background-color: transparent;"
+        "   border: none;"
+        "   font-size: 13px;"
+        "}";
+
+    QString titleLabelStyle =
+        "QLabel {"
+        "   color: #000000;"
+        "   background-color: transparent;"
+        "   border: none;"
+        "   font-weight: bold;"
+        "   font-size: 14px;"
+        "}";
+
+    titleText->setStyleSheet(titleLabelStyle);
+    categoryText->setStyleSheet(normalLabelStyle);
+    locationText->setStyleSheet(normalLabelStyle);
+    statusText->setStyleSheet(normalLabelStyle);
 
     cardLayout->addWidget(titleText);
     cardLayout->addWidget(categoryText);
