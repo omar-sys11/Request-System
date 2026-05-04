@@ -1,5 +1,5 @@
 #include "createrequestwindow.h"
-#include "OpenAiApiClient.h"
+#include "OpenAiAPIClient.h"
 
 #include <QLabel>
 #include <QLineEdit>

@@ -1,4 +1,4 @@
-#include "OpenAiApiClient.h"
+#include "OpenAiAPIClient.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>

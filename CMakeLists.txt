@@ -4,12 +4,14 @@ project(feedSystem LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Core Network)
+find_package(GTest CONFIG REQUIRED)
 
 set(APP_HEADERS
         include/createrequestwindow.h
@@ -31,22 +33,22 @@ set(APP_SOURCES
         src/OpenAiAPIClient.cpp
 )
 
-add_executable(feedSystem ${APP_SOURCES} ${APP_HEADERS})
-
-target_include_directories(feedSystem PRIVATE include)
-
-target_link_libraries(feedSystem PRIVATE Qt6::Widgets Qt6::Core Qt6::Network)
-
-include(FetchContent)
-
-FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+add_executable(feedSystem
+        ${APP_SOURCES}
+        ${APP_HEADERS}
 )
 
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+target_include_directories(feedSystem
+        PRIVATE
+        include
+)
 
-FetchContent_MakeAvailable(googletest)
+target_link_libraries(feedSystem
+        PRIVATE
+        Qt6::Widgets
+        Qt6::Core
+        Qt6::Network
+)
 
 enable_testing()
 
@@ -56,15 +58,17 @@ set(TEST_SOURCES
         src/RequestManager.cpp
 )
 
-add_executable(runTests ${TEST_SOURCES})
+add_executable(runTests
+        ${TEST_SOURCES}
+)
 
-target_include_directories(runTests PRIVATE include)
+target_include_directories(runTests
+        PRIVATE
+        include
+)
 
 target_link_libraries(runTests
         PRIVATE
-        GTest::gtest
-        GTest::gtest_main
-        GTest::gmock
         GTest::gmock_main
         Qt6::Core
 )
