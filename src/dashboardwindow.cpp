@@ -7,8 +7,7 @@
 #include <QHBoxLayout>
 #include <QFrame>
 #include <QFont>
-#include <QMessageBox>
-#include <QUuid>
+#include <Qt>
 
 DashboardWindow::DashboardWindow(const User &user, NetworkClient *client, QWidget *parent)
     : QWidget(parent), currentUser(user), networkClient(client) {
@@ -32,11 +31,14 @@ DashboardWindow::DashboardWindow(const User &user, NetworkClient *client, QWidge
     topLayout->addWidget(newRequestButton);
 
     requestsLayout = new QVBoxLayout;
+    requestsLayout->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+    requestsLayout->setSpacing(10);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addLayout(topLayout);
     mainLayout->addSpacing(10);
     mainLayout->addLayout(requestsLayout);
+    mainLayout->addStretch();
 
     setLayout(mainLayout);
     setWindowTitle("Dashboard");
@@ -48,17 +50,37 @@ DashboardWindow::DashboardWindow(const User &user, NetworkClient *client, QWidge
             this, &DashboardWindow::onDisconnected);
 
     connect(newRequestButton, &QPushButton::clicked, this, [this]() {
-        CreateRequestWindow *win = new CreateRequestWindow();
+        CreateRequestWindow *createRequestWindow = new CreateRequestWindow();
 
-        connect(win, &CreateRequestWindow::requestCreated,
-                this, [this](QString title, QString category, QString location) {
+        connect(createRequestWindow, &CreateRequestWindow::requestSubmitted,
+                this, &DashboardWindow::addRequestCard);
 
-                    requestManager.addRequest(
-                        title,
-                        category,
-                        location,
-                        QString::fromStdString(currentUser.getId())
-                    );
+        createRequestWindow->show();
+    });
+}
+
+void DashboardWindow::displayRequestCard(QString title, QString category, QString location, QString status)
+{
+    QFrame *requestCard = new QFrame(this);
+    requestCard->setFrameShape(QFrame::StyledPanel);
+    requestCard->setFixedSize(420, 130);
+
+    requestCard->setStyleSheet(
+        "QFrame {"
+        "   border: 1px solid #bfbfbf;"
+        "   border-radius: 8px;"
+        "   background-color: #ffffff;"
+        "}"
+    );
+
+    QVBoxLayout *cardLayout = new QVBoxLayout(requestCard);
+    cardLayout->setContentsMargins(12, 10, 12, 10);
+    cardLayout->setSpacing(6);
+
+    QLabel *titleText = new QLabel(title, requestCard);
+    QLabel *categoryText = new QLabel("Category: " + category, requestCard);
+    QLabel *locationText = new QLabel("Location: " + location, requestCard);
+    QLabel *statusText = new QLabel("Status: " + status, requestCard);
 
                     refreshRequests();
 			
@@ -71,8 +93,14 @@ DashboardWindow::DashboardWindow(const User &user, NetworkClient *client, QWidge
 
         win->show();
     });
+    titleText->setStyleSheet("font-weight: bold; font-size: 14px;");
 
-    refreshRequests();
+    cardLayout->addWidget(titleText);
+    cardLayout->addWidget(categoryText);
+    cardLayout->addWidget(locationText);
+    cardLayout->addWidget(statusText);
+
+    requestsLayout->insertWidget(0, requestCard, 0, Qt::AlignHCenter);
 }
 
 void DashboardWindow::onMessageReceived(QString type, QString requestId, QString title,
@@ -151,4 +179,8 @@ void DashboardWindow::refreshRequests() {
     }
 
     requestsLayout->addStretch();
+}
+void DashboardWindow::addRequestCard(QString title, QString category, QString location)
+{
+    displayRequestCard(title, category, location, "Open");
 }

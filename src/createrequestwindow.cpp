@@ -1,5 +1,5 @@
 #include "createrequestwindow.h"
-#include "OpenAiApiClient.h"
+#include "OpenAiAPIClient.h"
 
 #include <QLabel>
 #include <QLineEdit>
@@ -9,11 +9,12 @@
 #include <QFormLayout>
 #include <QMessageBox>
 #include <QFont>
-#include <QFrame>
 #include <QTextEdit>
+#include <QFrame>
 
 CreateRequestWindow::CreateRequestWindow(QWidget *parent)
-    : QWidget(parent) {
+    : QWidget(parent)
+{
     titleLabel = new QLabel("Create New Request", this);
     categoryLabel = new QLabel("Category:", this);
     locationLabel = new QLabel("Location:", this);
@@ -36,17 +37,17 @@ CreateRequestWindow::CreateRequestWindow(QWidget *parent)
     categoryComboBox->addItem("Quick Question");
     categoryComboBox->addItem("Tech Help");
 
+    submitButton = new QPushButton("Submit Request", this);
+    submitButton->setMinimumHeight(35);
+
+    openAiClient = new OpenAiApiClient(this);
+
     aiQuestionEdit = new QTextEdit(this);
     aiQuestionEdit->setPlaceholderText("Example: How should I write a good request?");
     aiQuestionEdit->setMinimumHeight(70);
 
     askAiButton = new QPushButton("Ask AI TA", this);
     askAiButton->setMinimumHeight(35);
-
-    submitButton = new QPushButton("Submit Request", this);
-    submitButton->setMinimumHeight(35);
-
-    openAiClient = new OpenAiApiClient(this);
 
     aiResponseBox = new QFrame(this);
     aiResponseBox->setObjectName("aiResponseBox");
@@ -122,9 +123,11 @@ CreateRequestWindow::CreateRequestWindow(QWidget *parent)
             this, &CreateRequestWindow::onApiError);
 }
 
-void CreateRequestWindow::onSubmitClicked() {
+void CreateRequestWindow::onSubmitClicked()
+{
     QString title = titleEdit->text().trimmed();
     QString location = locationEdit->text().trimmed();
+    QString category = categoryComboBox->currentText();
 
     if (title.isEmpty() || location.isEmpty()) {
         QMessageBox::warning(this, "Missing Information",
@@ -132,19 +135,17 @@ void CreateRequestWindow::onSubmitClicked() {
         return;
     }
 
-    emit requestCreated(
-        title,
-        categoryComboBox->currentText(),
-        location
-    );
+    emit requestSubmitted(title, category, location);
 
     statusLabel->setText("Request submitted successfully.");
-
     QMessageBox::information(this, "Success",
                              "Your request was submitted.");
+
+    this->close();
 }
 
-void CreateRequestWindow::onAskAiClicked() {
+void CreateRequestWindow::onAskAiClicked()
+{
     QString question = aiQuestionEdit->toPlainText().trimmed();
 
     if (question.isEmpty()) {
@@ -162,7 +163,8 @@ void CreateRequestWindow::onAskAiClicked() {
     openAiClient->askQuestion(question);
 }
 
-void CreateRequestWindow::onAiAnswerReceived(const QString &answer) {
+void CreateRequestWindow::onAiAnswerReceived(const QString &answer)
+{
     aiTextLabel->setText(answer.toHtmlEscaped().replace("\n", "<br>"));
     aiResponseBox->show();
 
@@ -170,7 +172,8 @@ void CreateRequestWindow::onAiAnswerReceived(const QString &answer) {
     askAiButton->setEnabled(true);
 }
 
-void CreateRequestWindow::onApiError(const QString &message) {
+void CreateRequestWindow::onApiError(const QString &message)
+{
     aiTextLabel->setText(
         "Sorry, I could not get a response right now.<br><br>" +
         message.toHtmlEscaped().replace("\n", "<br>")

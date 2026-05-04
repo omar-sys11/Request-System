@@ -7,18 +7,19 @@ class QLabel;
 class QLineEdit;
 class QComboBox;
 class QPushButton;
-class QFrame;
 class QTextEdit;
+class QFrame;
 class OpenAiApiClient;
 
-class CreateRequestWindow : public QWidget {
+class CreateRequestWindow : public QWidget
+{
     Q_OBJECT
 
 public:
     explicit CreateRequestWindow(QWidget *parent = nullptr);
 
-signals:
-    void requestCreated(QString title, QString category, QString location);
+    signals:
+        void requestSubmitted(QString title, QString category, QString location);
 
 private slots:
     void onSubmitClicked();
@@ -36,6 +37,7 @@ private:
     QLineEdit *titleEdit;
     QComboBox *categoryComboBox;
     QLineEdit *locationEdit;
+
     QTextEdit *aiQuestionEdit;
 
     QPushButton *submitButton;
@@ -48,4 +50,4 @@ private:
     OpenAiApiClient *openAiClient;
 };
 
-#endif
+#endif // CREATEREQUESTWINDOW_H
