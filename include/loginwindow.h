@@ -19,9 +19,8 @@ public:
         void connectRequested(const QString &name, const QString &ip, quint16 port);
 
 private slots:
-    void onConnectButtonClicked();
     void onConnectedToServer();
-    void onConnectionError(QString);
+    void onConnectionError(QString error);
     void onLoginButtonClicked();
     void onSignUpButtonClicked();
 
@@ -29,17 +28,20 @@ private:
     QLabel *titleLabel;
     QLabel *nameLabel;
     QLabel *passwordLabel;
+    QLabel *ipLabel;
+    QLabel *portLabel;
     QLabel *statusLabel;
 
     QLineEdit *nameEdit;
     QLineEdit *passwordEdit;
+    QLineEdit *ipEdit;
+    QLineEdit *portEdit;
 
-    QPushButton *connectButton;
+    QPushButton *loginButton;
+    QPushButton *signUpButton;
 
     NetworkClient *networkClient;
     QString pendingName;
-    QPushButton *loginButton;
-    QPushButton *signUpButton;
 
     DatabaseManager databaseManager;
 };

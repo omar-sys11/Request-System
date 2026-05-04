@@ -27,26 +27,37 @@ LoginWindow::LoginWindow(QWidget *parent)
 
     nameLabel = new QLabel("Username:", this);
     passwordLabel = new QLabel("Password:", this);
+    ipLabel = new QLabel("Server IP:", this);
+    portLabel = new QLabel("Port:", this);
     statusLabel = new QLabel("Status: Not logged in", this);
 
     nameEdit = new QLineEdit(this);
+
     passwordEdit = new QLineEdit(this);
     passwordEdit->setEchoMode(QLineEdit::Password);
 
+    ipEdit = new QLineEdit(this);
     ipEdit->setText("127.0.0.1");
-    portEdit->setText("12345");	
+
+    portEdit = new QLineEdit(this);
+    portEdit->setText("12345");
+
+    loginButton = new QPushButton("Login / Connect", this);
+    signUpButton = new QPushButton("Sign Up", this);
 
     networkClient = new NetworkClient(this);
+
     connect(networkClient, &NetworkClient::connectedToServer,
             this, &LoginWindow::onConnectedToServer);
+
     connect(networkClient, &NetworkClient::connectionError,
             this, &LoginWindow::onConnectionError);
-    loginButton = new QPushButton("Login", this);
-    signUpButton = new QPushButton("Sign Up", this);
 
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(nameLabel, nameEdit);
     formLayout->addRow(passwordLabel, passwordEdit);
+    formLayout->addRow(ipLabel, ipEdit);
+    formLayout->addRow(portLabel, portEdit);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->setSpacing(12);
@@ -60,7 +71,7 @@ LoginWindow::LoginWindow(QWidget *parent)
 
     setLayout(mainLayout);
     setWindowTitle("Login");
-    resize(350, 220);
+    resize(380, 280);
 
     if (!databaseManager.initialize()) {
         QMessageBox::warning(this, "Database Error",
@@ -101,10 +112,21 @@ void LoginWindow::onLoginButtonClicked()
 {
     QString username = nameEdit->text().trimmed();
     QString password = passwordEdit->text();
+    QString ip = ipEdit->text().trimmed();
+    QString portText = portEdit->text().trimmed();
 
-    if (username.isEmpty() || password.isEmpty()) {
+    if (username.isEmpty() || password.isEmpty() || ip.isEmpty() || portText.isEmpty()) {
         QMessageBox::warning(this, "Missing Information",
-                             "Please enter a username and password.");
+                             "Please enter username, password, server IP, and port.");
+        return;
+    }
+
+    bool portOk = false;
+    quint16 port = portText.toUShort(&portOk);
+
+    if (!portOk) {
+        QMessageBox::warning(this, "Invalid Port",
+                             "Please enter a valid port number.");
         return;
     }
 
@@ -118,14 +140,19 @@ void LoginWindow::onLoginButtonClicked()
         return;
     }
 
-    pendingName = name;
+    pendingName = storedUser.username;
+
     statusLabel->setText("Status: Connecting...");
-    connectButton->setEnabled(false);
+    loginButton->setEnabled(false);
+    signUpButton->setEnabled(false);
+
     networkClient->connectToServer(ip, port);
+
+    emit connectRequested(username, ip, port);
 }
 
-void LoginWindow::onConnectedToServer() {
-    // SIMPLE SERVICE CALL
+void LoginWindow::onConnectedToServer()
+{
     UserService service;
     User currentUser = service.createUser(pendingName.toStdString());
 
@@ -137,8 +164,12 @@ void LoginWindow::onConnectedToServer() {
     this->close();
 }
 
-void LoginWindow::onConnectionError(QString error) {
+void LoginWindow::onConnectionError(QString error)
+{
     statusLabel->setText("Status: Failed - " + error);
-    connectButton->setEnabled(true);
+
+    loginButton->setEnabled(true);
+    signUpButton->setEnabled(true);
+
     QMessageBox::warning(this, "Connection Failed", error);
 }

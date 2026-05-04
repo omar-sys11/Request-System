@@ -12,6 +12,7 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Core Network Sql)
 find_package(GTest CONFIG REQUIRED)
+find_package(Threads REQUIRED)
 
 set(APP_HEADERS
         include/createrequestwindow.h
@@ -23,6 +24,7 @@ set(APP_HEADERS
         include/user.h
         include/UserService.h
         include/databasemanager.h
+        include/networkclient.h
 )
 
 set_source_files_properties(${APP_HEADERS} PROPERTIES AUTOMOC ON)
@@ -37,6 +39,7 @@ set(APP_SOURCES
         src/dashboardwindow.cpp
         src/OpenAiAPIClient.cpp
         src/databasemanager.cpp
+        src/networkclient.cpp
 )
 
 add_executable(feedSystem
@@ -83,3 +86,12 @@ target_link_libraries(runTests
 
 include(GoogleTest)
 gtest_discover_tests(runTests)
+
+add_executable(server
+        src/server.cpp
+)
+
+target_link_libraries(server
+        PRIVATE
+        Threads::Threads
+)
