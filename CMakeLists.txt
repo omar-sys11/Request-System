@@ -10,7 +10,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Core Network)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Network Sql)
 find_package(GTest CONFIG REQUIRED)
 
 set(APP_HEADERS
@@ -18,6 +18,11 @@ set(APP_HEADERS
         include/dashboardwindow.h
         include/loginwindow.h
         include/OpenAiAPIClient.h
+        include/Request.h
+        include/RequestManager.h
+        include/user.h
+        include/UserService.h
+        include/databasemanager.h
 )
 
 set_source_files_properties(${APP_HEADERS} PROPERTIES AUTOMOC ON)
@@ -31,6 +36,7 @@ set(APP_SOURCES
         src/loginwindow.cpp
         src/dashboardwindow.cpp
         src/OpenAiAPIClient.cpp
+        src/databasemanager.cpp
 )
 
 add_executable(feedSystem
@@ -48,6 +54,7 @@ target_link_libraries(feedSystem
         Qt6::Widgets
         Qt6::Core
         Qt6::Network
+        Qt6::Sql
 )
 
 enable_testing()
@@ -55,6 +62,7 @@ enable_testing()
 set(TEST_SOURCES
         tests/request_tests.cpp
         src/user.cpp
+        src/UserService.cpp
         src/RequestManager.cpp
 )
 

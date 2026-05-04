@@ -9,7 +9,6 @@
 #include <QUuid>
 #include "dashboardwindow.h"
 #include "user.h"
-#include "UserService.h"
 
 LoginWindow::LoginWindow(QWidget *parent)
     : QWidget(parent) {
@@ -74,11 +73,12 @@ void LoginWindow::onConnectButtonClicked() {
         return;
     }
 
-    // SIMPLE SERVICE CALL
-    UserService service;
-    User currentUser = service.createUser(name.toStdString());
+    std::string userId = QUuid::createUuid().toString().toStdString();
+    std::string userName = name.toStdString();
+    User currentUser(userId, userName);
 
     statusLabel->setText("Status: Connected");
+    QMessageBox::information(this, "Connected", "Connected successfully.");
 
     DashboardWindow *dashboard = new DashboardWindow(currentUser);
     dashboard->show();

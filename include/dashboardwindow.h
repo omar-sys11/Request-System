@@ -3,13 +3,14 @@
 
 #include <QWidget>
 #include "user.h"
-#include "RequestManager.h"
+#include "databasemanager.h"
 
 class QLabel;
 class QPushButton;
 class QVBoxLayout;
 
-class DashboardWindow : public QWidget {
+class DashboardWindow : public QWidget
+{
     Q_OBJECT
 
 public:
@@ -17,14 +18,17 @@ public:
 
 private:
     User currentUser;
-
     QLabel *titleLabel;
     QPushButton *newRequestButton;
     QVBoxLayout *requestsLayout;
 
-    RequestManager requestManager;
+    DatabaseManager databaseManager;
 
-    void refreshRequests();
+    void displayRequestCard(QString title, QString category, QString location, QString status);
+    void loadRequestsFromDatabase();
+
+private slots:
+    void addRequestCard(QString title, QString category, QString location);
 };
 
-#endif
+#endif // DASHBOARDWINDOW_H
