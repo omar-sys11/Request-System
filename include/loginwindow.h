@@ -2,6 +2,7 @@
 #define LOGINWINDOW_H
 
 #include <QWidget>
+#include "networkclient.h"
 #include "databasemanager.h"
 
 class QLabel;
@@ -18,6 +19,9 @@ public:
         void connectRequested(const QString &name, const QString &ip, quint16 port);
 
 private slots:
+    void onConnectButtonClicked();
+    void onConnectedToServer();
+    void onConnectionError(QString);
     void onLoginButtonClicked();
     void onSignUpButtonClicked();
 
@@ -30,6 +34,10 @@ private:
     QLineEdit *nameEdit;
     QLineEdit *passwordEdit;
 
+    QPushButton *connectButton;
+
+    NetworkClient *networkClient;
+    QString pendingName;
     QPushButton *loginButton;
     QPushButton *signUpButton;
 

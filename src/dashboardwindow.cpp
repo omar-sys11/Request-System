@@ -9,9 +9,9 @@
 #include <QFont>
 #include <Qt>
 
-DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
-    : QWidget(parent), currentUser(user)
-{
+DashboardWindow::DashboardWindow(const User &user, NetworkClient *client, QWidget *parent)
+    : QWidget(parent), currentUser(user), networkClient(client) {
+
     titleLabel = new QLabel(
         QString("Welcome, %1 — Live Requests Feed")
             .arg(QString::fromStdString(currentUser.getDisplayName())),
@@ -43,6 +43,11 @@ DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
     setLayout(mainLayout);
     setWindowTitle("Dashboard");
     resize(500, 400);
+
+    connect(networkClient, &NetworkClient::messageReceived,
+            this, &DashboardWindow::onMessageReceived);
+    connect(networkClient, &NetworkClient::disconnectedFromServer,
+            this, &DashboardWindow::onDisconnected);
 
     connect(newRequestButton, &QPushButton::clicked, this, [this]() {
         CreateRequestWindow *createRequestWindow = new CreateRequestWindow();
@@ -77,6 +82,17 @@ void DashboardWindow::displayRequestCard(QString title, QString category, QStrin
     QLabel *locationText = new QLabel("Location: " + location, requestCard);
     QLabel *statusText = new QLabel("Status: " + status, requestCard);
 
+                    refreshRequests();
+			
+		    networkClient->sendNewRequest(
+                        title, category, location,
+                        QString::fromStdString(currentUser.getDisplayName())
+		    );
+                });
+
+
+        win->show();
+    });
     titleText->setStyleSheet("font-weight: bold; font-size: 14px;");
 
     cardLayout->addWidget(titleText);
@@ -87,6 +103,83 @@ void DashboardWindow::displayRequestCard(QString title, QString category, QStrin
     requestsLayout->insertWidget(0, requestCard, 0, Qt::AlignHCenter);
 }
 
+void DashboardWindow::onMessageReceived(QString type, QString requestId, QString title,
+                                         QString category, QString location,
+                                         QString poster, QString status) {
+    if (type == "new_request") {
+        requestManager.addRequest(title, category, location, poster);
+        refreshRequests();
+    }
+    else if (type == "accept_request" || type == "close_request") {
+        requestManager.acceptRequest(requestId, poster);
+        refreshRequests();
+    }
+}
+
+void DashboardWindow::onDisconnected() {
+    QMessageBox::warning(this, "Disconnected", "Lost connection to server.");
+}
+
+void DashboardWindow::refreshRequests() {
+    QLayoutItem *item;
+    while ((item = requestsLayout->takeAt(0))) {
+        delete item->widget();
+        delete item;
+    }
+
+    for (const auto &r : requestManager.getRequests()) {
+
+        QFrame *card = new QFrame(this);
+        card->setFrameShape(QFrame::StyledPanel);
+
+        QVBoxLayout *layout = new QVBoxLayout(card);
+
+        QLabel *title = new QLabel(r.title, this);
+        QLabel *cat = new QLabel("Category: " + r.category, this);
+        QLabel *loc = new QLabel("Location: " + r.location, this);
+
+        QString statusText =
+            (r.status == RequestStatus::Open) ? "Open" :
+            (r.status == RequestStatus::Accepted) ? "Accepted" :
+                                                    "Closed";
+
+        QLabel *status = new QLabel("Status: " + statusText, this);
+
+        QPushButton *acceptBtn = new QPushButton("Accept", this);
+        QPushButton *closeBtn = new QPushButton("Close", this);
+
+        connect(acceptBtn, &QPushButton::clicked, this, [=]() {
+            if (!requestManager.acceptRequest(r.id, QString::fromStdString(currentUser.getId()))) {
+                QMessageBox::warning(this, "Error", "Cannot accept request.");
+                return;
+            }
+	    networkClient->sendAccept(r.id, QString::fromStdString(currentUser.getDisplayName()));
+
+            refreshRequests();
+        });
+
+        connect(closeBtn, &QPushButton::clicked, this, [=]() {
+            if (!requestManager.closeRequest(r.id, QString::fromStdString(currentUser.getId()))) {
+                QMessageBox::warning(this, "Error", "Cannot close request.");
+                return;
+            }
+            networkClient->sendClose(r.id);
+
+            refreshRequests();
+        });
+
+        layout->addWidget(title);
+        layout->addWidget(cat);
+        layout->addWidget(loc);
+        layout->addWidget(status);
+        layout->addWidget(acceptBtn);
+        layout->addWidget(closeBtn);
+
+        requestsLayout->addWidget(card);
+    }
+
+    requestsLayout->addStretch();
+}
 void DashboardWindow::addRequestCard(QString title, QString category, QString location)
 {
     displayRequestCard(title, category, location, "Open");
