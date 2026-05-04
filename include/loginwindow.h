@@ -2,6 +2,7 @@
 #define LOGINWINDOW_H
 
 #include <QWidget>
+#include "databasemanager.h"
 
 class QLabel;
 class QLineEdit;
@@ -13,24 +14,26 @@ class LoginWindow : public QWidget {
 public:
     explicit LoginWindow(QWidget *parent = nullptr);
 
-signals:
-    void connectRequested(const QString &name, const QString &ip, quint16 port);
+    signals:
+        void connectRequested(const QString &name, const QString &ip, quint16 port);
 
 private slots:
-    void onConnectButtonClicked();
+    void onLoginButtonClicked();
+    void onSignUpButtonClicked();
 
 private:
     QLabel *titleLabel;
     QLabel *nameLabel;
-    QLabel *ipLabel;
-    QLabel *portLabel;
+    QLabel *passwordLabel;
     QLabel *statusLabel;
 
     QLineEdit *nameEdit;
-    QLineEdit *ipEdit;
-    QLineEdit *portEdit;
+    QLineEdit *passwordEdit;
 
-    QPushButton *connectButton;
+    QPushButton *loginButton;
+    QPushButton *signUpButton;
+
+    DatabaseManager databaseManager;
 };
 
 #endif // LOGINWINDOW_H

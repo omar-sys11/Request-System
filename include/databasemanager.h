@@ -2,14 +2,11 @@
 #define DATABASEMANAGER_H
 
 #include <QString>
-#include <QList>
 
-struct StoredRequest
+struct StoredUser
 {
-    QString title;
-    QString category;
-    QString location;
-    QString status;
+    QString id;
+    QString username;
 };
 
 class DatabaseManager
@@ -18,12 +15,10 @@ public:
     DatabaseManager();
 
     bool initialize();
-    bool addRequest(const QString& title,
-                    const QString& category,
-                    const QString& location,
-                    const QString& status);
 
-    QList<StoredRequest> loadRequests();
+    bool signUpUser(const QString& username, const QString& password);
+    bool loginUser(const QString& username, const QString& password, StoredUser& user);
+
     QString getLastError() const;
 
 private:

@@ -4,6 +4,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QVariant>
+#include <QUuid>
 
 DatabaseManager::DatabaseManager()
 {
@@ -13,11 +14,11 @@ bool DatabaseManager::initialize()
 {
     QSqlDatabase database;
 
-    if (QSqlDatabase::contains("requests_connection")) {
-        database = QSqlDatabase::database("requests_connection");
+    if (QSqlDatabase::contains("users_connection")) {
+        database = QSqlDatabase::database("users_connection");
     } else {
-        database = QSqlDatabase::addDatabase("QSQLITE", "requests_connection");
-        database.setDatabaseName("requests.db");
+        database = QSqlDatabase::addDatabase("QSQLITE", "users_connection");
+        database.setDatabaseName("users.db");
     }
 
     if (!database.open()) {
@@ -28,12 +29,10 @@ bool DatabaseManager::initialize()
     QSqlQuery query(database);
 
     bool success = query.exec(
-        "CREATE TABLE IF NOT EXISTS requests ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "title TEXT NOT NULL,"
-        "category TEXT NOT NULL,"
-        "location TEXT NOT NULL,"
-        "status TEXT NOT NULL"
+        "CREATE TABLE IF NOT EXISTS users ("
+        "id TEXT PRIMARY KEY,"
+        "username TEXT NOT NULL UNIQUE,"
+        "password TEXT NOT NULL"
         ")"
     );
 
@@ -45,30 +44,25 @@ bool DatabaseManager::initialize()
     return true;
 }
 
-bool DatabaseManager::addRequest(const QString& title,
-                                 const QString& category,
-                                 const QString& location,
-                                 const QString& status)
+bool DatabaseManager::signUpUser(const QString& username, const QString& password)
 {
-    QSqlDatabase database = QSqlDatabase::database("requests_connection");
-
-    if (!database.isOpen()) {
-        if (!initialize()) {
-            return false;
-        }
+    if (!initialize()) {
+        return false;
     }
 
+    QSqlDatabase database = QSqlDatabase::database("users_connection");
     QSqlQuery query(database);
 
+    QString id = QUuid::createUuid().toString();
+
     query.prepare(
-        "INSERT INTO requests (title, category, location, status) "
-        "VALUES (:title, :category, :location, :status)"
+        "INSERT INTO users (id, username, password) "
+        "VALUES (:id, :username, :password)"
     );
 
-    query.bindValue(":title", title);
-    query.bindValue(":category", category);
-    query.bindValue(":location", location);
-    query.bindValue(":status", status);
+    query.bindValue(":id", id);
+    query.bindValue(":username", username);
+    query.bindValue(":password", password);
 
     if (!query.exec()) {
         lastError = query.lastError().text();
@@ -78,42 +72,38 @@ bool DatabaseManager::addRequest(const QString& title,
     return true;
 }
 
-QList<StoredRequest> DatabaseManager::loadRequests()
+bool DatabaseManager::loginUser(const QString& username, const QString& password, StoredUser& user)
 {
-    QList<StoredRequest> requests;
-
-    QSqlDatabase database = QSqlDatabase::database("requests_connection");
-
-    if (!database.isOpen()) {
-        if (!initialize()) {
-            return requests;
-        }
+    if (!initialize()) {
+        return false;
     }
 
+    QSqlDatabase database = QSqlDatabase::database("users_connection");
     QSqlQuery query(database);
 
-    bool success = query.exec(
-        "SELECT title, category, location, status "
-        "FROM requests "
-        "ORDER BY id DESC"
+    query.prepare(
+        "SELECT id, username "
+        "FROM users "
+        "WHERE username = :username AND password = :password"
     );
 
-    if (!success) {
+    query.bindValue(":username", username);
+    query.bindValue(":password", password);
+
+    if (!query.exec()) {
         lastError = query.lastError().text();
-        return requests;
+        return false;
     }
 
-    while (query.next()) {
-        StoredRequest request;
-        request.title = query.value(0).toString();
-        request.category = query.value(1).toString();
-        request.location = query.value(2).toString();
-        request.status = query.value(3).toString();
-
-        requests.append(request);
+    if (!query.next()) {
+        lastError = "Invalid username or password.";
+        return false;
     }
 
-    return requests;
+    user.id = query.value(0).toString();
+    user.username = query.value(1).toString();
+
+    return true;
 }
 
 QString DatabaseManager::getLastError() const
