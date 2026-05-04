@@ -13,8 +13,11 @@ public:
 
     void connectToServer(const QString& ip, quint16 port);
 
-    void sendNewRequest(const QString& title, const QString& category,
-                        const QString& location, const QString& poster);
+    void sendNewRequest(const QString& requestId,
+                        const QString& title,
+                        const QString& category,
+                        const QString& location,
+                        const QString& poster);
 
     void sendAccept(const QString& requestId, const QString& acceptedBy);
 

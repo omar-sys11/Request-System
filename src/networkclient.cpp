@@ -1,7 +1,7 @@
 #include "networkclient.h"
+
 #include <QJsonObject>
 #include <QJsonDocument>
-#include <QDateTime>
 
 NetworkClient::NetworkClient(QObject* parent) : QObject(parent) {
     socket = new QTcpSocket(this);
@@ -13,6 +13,10 @@ NetworkClient::NetworkClient(QObject* parent) : QObject(parent) {
 }
 
 void NetworkClient::connectToServer(const QString& ip, quint16 port) {
+    if (socket->state() != QAbstractSocket::UnconnectedState) {
+        socket->abort();
+    }
+
     socket->connectToHost(ip, port);
 }
 
@@ -22,20 +26,24 @@ bool NetworkClient::isConnected() {
 
 void NetworkClient::sendJson(const QString& json) {
     if (!isConnected()) return;
+
     socket->write(json.toUtf8());
     socket->flush();
 }
 
-void NetworkClient::sendNewRequest(const QString& title, const QString& category,
-                                    const QString& location, const QString& poster) {
+void NetworkClient::sendNewRequest(const QString& requestId,
+                                   const QString& title,
+                                   const QString& category,
+                                   const QString& location,
+                                   const QString& poster) {
     QJsonObject obj;
     obj["type"] = "new_request";
+    obj["request_id"] = requestId;
     obj["title"] = title;
     obj["category"] = category;
     obj["location"] = location;
     obj["poster"] = poster;
     obj["status"] = "open";
-    obj["request_id"] = QString::number(QDateTime::currentMSecsSinceEpoch());
 
     QJsonDocument doc(obj);
     sendJson(doc.toJson(QJsonDocument::Compact));
@@ -72,11 +80,15 @@ void NetworkClient::onDisconnected() {
 
 void NetworkClient::onReadyRead() {
     QByteArray data = socket->readAll();
+
     QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (doc.isNull()){ 
-	return;
-}
+
+    if (doc.isNull() || !doc.isObject()) {
+        return;
+    }
+
     QJsonObject obj = doc.object();
+
     QString type = obj["type"].toString();
     QString requestId = obj["request_id"].toString();
     QString title = obj["title"].toString();
@@ -85,9 +97,14 @@ void NetworkClient::onReadyRead() {
     QString poster = obj["poster"].toString();
     QString status = obj["status"].toString();
 
+    if (poster.isEmpty()) {
+        poster = obj["accepted_by"].toString();
+    }
+
     emit messageReceived(type, requestId, title, category, location, poster, status);
 }
 
 void NetworkClient::onError(QAbstractSocket::SocketError err) {
+    Q_UNUSED(err);
     emit connectionError(socket->errorString());
 }

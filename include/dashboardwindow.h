@@ -41,7 +41,6 @@ private:
     QVBoxLayout *requestsLayout;
 
     void refreshRequests();
-    void displayRequestCard(QString title, QString category, QString location, QString status);
 };
 
 #endif

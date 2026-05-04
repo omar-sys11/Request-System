@@ -11,10 +11,14 @@ public:
     void addRequest(const QString &title,
                     const QString &category,
                     const QString &location,
-                    const QString &ownerId);
+                    const QString &ownerId,
+                    const QString &requestId = "");
 
     bool acceptRequest(const QString &requestId, const QString &userId);
     bool closeRequest(const QString &requestId, const QString &userId);
+
+    bool markAccepted(const QString &requestId);
+    bool markClosed(const QString &requestId);
 
 private:
     std::vector<Request> requests;

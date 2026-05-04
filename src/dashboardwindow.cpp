@@ -8,6 +8,7 @@
 #include <QFrame>
 #include <QFont>
 #include <QMessageBox>
+#include <QDateTime>
 #include <Qt>
 
 DashboardWindow::DashboardWindow(const User &user, NetworkClient *client, QWidget *parent)
@@ -45,6 +46,27 @@ DashboardWindow::DashboardWindow(const User &user, NetworkClient *client, QWidge
     setWindowTitle("Dashboard");
     resize(500, 400);
 
+    setStyleSheet(
+        "QWidget {"
+        "   background-color: #f5f5f5;"
+        "   color: #000000;"
+        "}"
+        "QLabel {"
+        "   color: #000000;"
+        "   background-color: transparent;"
+        "}"
+        "QPushButton {"
+        "   color: #000000;"
+        "   background-color: #e0e0e0;"
+        "   border: 1px solid #888888;"
+        "   border-radius: 4px;"
+        "   padding: 6px;"
+        "}"
+        "QPushButton:hover {"
+        "   background-color: #d0d0d0;"
+        "}"
+    );
+
     connect(networkClient, &NetworkClient::messageReceived,
             this, &DashboardWindow::onMessageReceived);
 
@@ -63,70 +85,17 @@ DashboardWindow::DashboardWindow(const User &user, NetworkClient *client, QWidge
 
 void DashboardWindow::addRequestCard(QString title, QString category, QString location)
 {
+    QString requestId = QString::number(QDateTime::currentMSecsSinceEpoch());
     QString userId = QString::fromStdString(currentUser.getId());
     QString poster = QString::fromStdString(currentUser.getDisplayName());
 
-    requestManager.addRequest(title, category, location, userId);
+    requestManager.addRequest(title, category, location, userId, requestId);
 
     if (networkClient != nullptr && networkClient->isConnected()) {
-        networkClient->sendNewRequest(title, category, location, poster);
+        networkClient->sendNewRequest(requestId, title, category, location, poster);
     }
 
     refreshRequests();
-}
-
-void DashboardWindow::displayRequestCard(QString title, QString category, QString location, QString status)
-{
-    QFrame *requestCard = new QFrame(this);
-    requestCard->setObjectName("requestCard");
-    requestCard->setFrameShape(QFrame::NoFrame);
-    requestCard->setFixedSize(420, 130);
-
-    requestCard->setStyleSheet(
-        "#requestCard {"
-        "   border: 1px solid #bfbfbf;"
-        "   border-radius: 8px;"
-        "   background-color: #ffffff;"
-        "}"
-    );
-
-    QVBoxLayout *cardLayout = new QVBoxLayout(requestCard);
-    cardLayout->setContentsMargins(12, 10, 12, 10);
-    cardLayout->setSpacing(6);
-
-    QLabel *titleText = new QLabel(title, requestCard);
-    QLabel *categoryText = new QLabel("Category: " + category, requestCard);
-    QLabel *locationText = new QLabel("Location: " + location, requestCard);
-    QLabel *statusText = new QLabel("Status: " + status, requestCard);
-
-    QString normalLabelStyle =
-        "QLabel {"
-        "   color: #000000;"
-        "   background-color: transparent;"
-        "   border: none;"
-        "   font-size: 13px;"
-        "}";
-
-    QString titleLabelStyle =
-        "QLabel {"
-        "   color: #000000;"
-        "   background-color: transparent;"
-        "   border: none;"
-        "   font-weight: bold;"
-        "   font-size: 14px;"
-        "}";
-
-    titleText->setStyleSheet(titleLabelStyle);
-    categoryText->setStyleSheet(normalLabelStyle);
-    locationText->setStyleSheet(normalLabelStyle);
-    statusText->setStyleSheet(normalLabelStyle);
-
-    cardLayout->addWidget(titleText);
-    cardLayout->addWidget(categoryText);
-    cardLayout->addWidget(locationText);
-    cardLayout->addWidget(statusText);
-
-    requestsLayout->insertWidget(0, requestCard, 0, Qt::AlignHCenter);
 }
 
 void DashboardWindow::refreshRequests()
@@ -141,6 +110,9 @@ void DashboardWindow::refreshRequests()
         delete item;
     }
 
+    QString currentUserId = QString::fromStdString(currentUser.getId());
+    QString currentUserName = QString::fromStdString(currentUser.getDisplayName());
+
     for (const auto &request : requestManager.getRequests()) {
         QString statusText;
 
@@ -152,7 +124,100 @@ void DashboardWindow::refreshRequests()
             statusText = "Closed";
         }
 
-        displayRequestCard(request.title, request.category, request.location, statusText);
+        QFrame *requestCard = new QFrame(this);
+        requestCard->setObjectName("requestCard");
+        requestCard->setFrameShape(QFrame::NoFrame);
+        requestCard->setFixedSize(420, 170);
+
+        requestCard->setStyleSheet(
+            "#requestCard {"
+            "   border: 1px solid #bfbfbf;"
+            "   border-radius: 8px;"
+            "   background-color: #ffffff;"
+            "}"
+        );
+
+        QVBoxLayout *cardLayout = new QVBoxLayout(requestCard);
+        cardLayout->setContentsMargins(12, 10, 12, 10);
+        cardLayout->setSpacing(6);
+
+        QLabel *titleText = new QLabel(request.title, requestCard);
+        QLabel *categoryText = new QLabel("Category: " + request.category, requestCard);
+        QLabel *locationText = new QLabel("Location: " + request.location, requestCard);
+        QLabel *statusLabel = new QLabel("Status: " + statusText, requestCard);
+
+        QString normalLabelStyle =
+            "QLabel {"
+            "   color: #000000;"
+            "   background-color: transparent;"
+            "   border: none;"
+            "   font-size: 13px;"
+            "}";
+
+        QString titleLabelStyle =
+            "QLabel {"
+            "   color: #000000;"
+            "   background-color: transparent;"
+            "   border: none;"
+            "   font-weight: bold;"
+            "   font-size: 14px;"
+            "}";
+
+        titleText->setStyleSheet(titleLabelStyle);
+        categoryText->setStyleSheet(normalLabelStyle);
+        locationText->setStyleSheet(normalLabelStyle);
+        statusLabel->setStyleSheet(normalLabelStyle);
+
+        cardLayout->addWidget(titleText);
+        cardLayout->addWidget(categoryText);
+        cardLayout->addWidget(locationText);
+        cardLayout->addWidget(statusLabel);
+
+        QHBoxLayout *buttonLayout = new QHBoxLayout;
+
+        bool isOwnRequest = (request.ownerId == currentUserId);
+
+        if (request.status == RequestStatus::Open && isOwnRequest) {
+            QPushButton *closeButton = new QPushButton("Close", requestCard);
+
+            connect(closeButton, &QPushButton::clicked, this, [this, request, currentUserId]() {
+                if (!requestManager.closeRequest(request.id, currentUserId)) {
+                    QMessageBox::warning(this, "Error", "Cannot close this request.");
+                    return;
+                }
+
+                if (networkClient != nullptr && networkClient->isConnected()) {
+                    networkClient->sendClose(request.id);
+                }
+
+                refreshRequests();
+            });
+
+            buttonLayout->addWidget(closeButton);
+        }
+
+        if (request.status == RequestStatus::Open && !isOwnRequest) {
+            QPushButton *acceptButton = new QPushButton("Accept", requestCard);
+
+            connect(acceptButton, &QPushButton::clicked, this, [this, request, currentUserId, currentUserName]() {
+                if (!requestManager.acceptRequest(request.id, currentUserId)) {
+                    QMessageBox::warning(this, "Error", "Cannot accept this request.");
+                    return;
+                }
+
+                if (networkClient != nullptr && networkClient->isConnected()) {
+                    networkClient->sendAccept(request.id, currentUserName);
+                }
+
+                refreshRequests();
+            });
+
+            buttonLayout->addWidget(acceptButton);
+        }
+
+        cardLayout->addLayout(buttonLayout);
+
+        requestsLayout->insertWidget(0, requestCard, 0, Qt::AlignHCenter);
     }
 }
 
@@ -164,11 +229,16 @@ void DashboardWindow::onMessageReceived(QString type,
                                         QString poster,
                                         QString status)
 {
-    Q_UNUSED(requestId);
     Q_UNUSED(status);
 
     if (type == "new_request") {
-        requestManager.addRequest(title, category, location, poster);
+        requestManager.addRequest(title, category, location, poster, requestId);
+        refreshRequests();
+    } else if (type == "accept_request") {
+        requestManager.markAccepted(requestId);
+        refreshRequests();
+    } else if (type == "close_request") {
+        requestManager.markClosed(requestId);
         refreshRequests();
     }
 }
