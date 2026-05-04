@@ -10,6 +10,7 @@
 #include "dashboardwindow.h"
 #include "user.h"
 #include "UserService.h"
+#include "networkclient.h"
 
 LoginWindow::LoginWindow(QWidget *parent)
     : QWidget(parent) {
@@ -31,7 +32,13 @@ LoginWindow::LoginWindow(QWidget *parent)
     connectButton = new QPushButton("Connect", this);
 
     ipEdit->setText("127.0.0.1");
-    portEdit->setText("12345");
+    portEdit->setText("12345");	
+
+    networkClient = new NetworkClient(this);
+    connect(networkClient, &NetworkClient::connectedToServer,
+            this, &LoginWindow::onConnectedToServer);
+    connect(networkClient, &NetworkClient::connectionError,
+            this, &LoginWindow::onConnectionError);
 
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(nameLabel, nameEdit);
@@ -74,16 +81,27 @@ void LoginWindow::onConnectButtonClicked() {
         return;
     }
 
+    pendingName = name;
+    statusLabel->setText("Status: Connecting...");
+    connectButton->setEnabled(false);
+    networkClient->connectToServer(ip, port);
+}
+
+void LoginWindow::onConnectedToServer() {
     // SIMPLE SERVICE CALL
     UserService service;
-    User currentUser = service.createUser(name.toStdString());
+    User currentUser = service.createUser(pendingName.toStdString());
 
     statusLabel->setText("Status: Connected");
 
-    DashboardWindow *dashboard = new DashboardWindow(currentUser);
+    DashboardWindow *dashboard = new DashboardWindow(currentUser, networkClient);
     dashboard->show();
 
     this->close();
+}
 
-    emit connectRequested(name, ip, port);
+void LoginWindow::onConnectionError(QString error) {
+    statusLabel->setText("Status: Failed - " + error);
+    connectButton->setEnabled(true);
+    QMessageBox::warning(this, "Connection Failed", error);
 }

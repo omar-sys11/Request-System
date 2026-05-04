@@ -2,6 +2,7 @@
 #define LOGINWINDOW_H
 
 #include <QWidget>
+#include "networkclient.h"
 
 class QLabel;
 class QLineEdit;
@@ -18,6 +19,8 @@ signals:
 
 private slots:
     void onConnectButtonClicked();
+    void onConnectedToServer();
+    void onConnectionError(QString);
 
 private:
     QLabel *titleLabel;
@@ -31,6 +34,9 @@ private:
     QLineEdit *portEdit;
 
     QPushButton *connectButton;
+
+    NetworkClient *networkClient;
+    QString pendingName;
 };
 
 #endif // LOGINWINDOW_H

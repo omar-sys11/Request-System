@@ -72,10 +72,10 @@ void NetworkClient::onDisconnected() {
 
 void NetworkClient::onReadyRead() {
     QByteArray data = socket->readAll();
-
     QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (doc.isNull()) return;
-
+    if (doc.isNull()){ 
+	return;
+}
     QJsonObject obj = doc.object();
     QString type = obj["type"].toString();
     QString requestId = obj["request_id"].toString();

@@ -10,8 +10,8 @@
 #include <QMessageBox>
 #include <QUuid>
 
-DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
-    : QWidget(parent), currentUser(user) {
+DashboardWindow::DashboardWindow(const User &user, NetworkClient *client, QWidget *parent)
+    : QWidget(parent), currentUser(user), networkClient(client) {
 
     titleLabel = new QLabel(
         QString("Welcome, %1 — Live Requests Feed")
@@ -42,6 +42,11 @@ DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
     setWindowTitle("Dashboard");
     resize(500, 400);
 
+    connect(networkClient, &NetworkClient::messageReceived,
+            this, &DashboardWindow::onMessageReceived);
+    connect(networkClient, &NetworkClient::disconnectedFromServer,
+            this, &DashboardWindow::onDisconnected);
+
     connect(newRequestButton, &QPushButton::clicked, this, [this]() {
         CreateRequestWindow *win = new CreateRequestWindow();
 
@@ -56,12 +61,35 @@ DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
                     );
 
                     refreshRequests();
+			
+		    networkClient->sendNewRequest(
+                        title, category, location,
+                        QString::fromStdString(currentUser.getDisplayName())
+		    );
                 });
+
 
         win->show();
     });
 
     refreshRequests();
+}
+
+void DashboardWindow::onMessageReceived(QString type, QString requestId, QString title,
+                                         QString category, QString location,
+                                         QString poster, QString status) {
+    if (type == "new_request") {
+        requestManager.addRequest(title, category, location, poster);
+        refreshRequests();
+    }
+    else if (type == "accept_request" || type == "close_request") {
+        requestManager.acceptRequest(requestId, poster);
+        refreshRequests();
+    }
+}
+
+void DashboardWindow::onDisconnected() {
+    QMessageBox::warning(this, "Disconnected", "Lost connection to server.");
 }
 
 void DashboardWindow::refreshRequests() {
@@ -97,6 +125,8 @@ void DashboardWindow::refreshRequests() {
                 QMessageBox::warning(this, "Error", "Cannot accept request.");
                 return;
             }
+	    networkClient->sendAccept(r.id, QString::fromStdString(currentUser.getDisplayName()));
+
             refreshRequests();
         });
 
@@ -105,6 +135,8 @@ void DashboardWindow::refreshRequests() {
                 QMessageBox::warning(this, "Error", "Cannot close request.");
                 return;
             }
+            networkClient->sendClose(r.id);
+
             refreshRequests();
         });
 
