@@ -7,12 +7,16 @@
 #include <QHBoxLayout>
 #include <QFrame>
 #include <QFont>
-#include <QMessageBox>
 
 DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
     : QWidget(parent), currentUser(user)
 {
-    titleLabel = new QLabel("Live Requests Feed", this);
+    titleLabel = new QLabel(
+        QString("Welcome, %1 — Live Requests Feed")
+            .arg(QString::fromStdString(currentUser.getDisplayName())),
+        this
+    );
+
     newRequestButton = new QPushButton("New Request", this);
 
     QFont titleFont;
@@ -26,13 +30,6 @@ DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
     topLayout->addWidget(newRequestButton);
 
     requestsLayout = new QVBoxLayout;
-
-    if (!databaseManager.initialize()) {
-        QMessageBox::warning(this, "Database Error",
-                             "Could not open database:\n" + databaseManager.getLastError());
-    }
-
-    loadRequestsFromDatabase();
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addLayout(topLayout);
@@ -53,22 +50,6 @@ DashboardWindow::DashboardWindow(const User &user, QWidget *parent)
     });
 }
 
-void DashboardWindow::loadRequestsFromDatabase()
-{
-    QList<StoredRequest> savedRequests = databaseManager.loadRequests();
-
-    if (savedRequests.isEmpty()) {
-        displayRequestCard("Need calculus notes", "Study Help", "HUSS Building", "Open");
-        displayRequestCard("Looking for a study partner", "Study Partner", "Library", "Open");
-        displayRequestCard("Need a charger urgently", "Borrow Item", "Dorm 5", "Open");
-        return;
-    }
-
-    for (const StoredRequest& request : savedRequests) {
-        displayRequestCard(request.title, request.category, request.location, request.status);
-    }
-}
-
 void DashboardWindow::displayRequestCard(QString title, QString category, QString location, QString status)
 {
     QFrame *requestCard = new QFrame(this);
@@ -85,15 +66,5 @@ void DashboardWindow::displayRequestCard(QString title, QString category, QStrin
 
 void DashboardWindow::addRequestCard(QString title, QString category, QString location)
 {
-    QString status = "Open";
-
-    bool saved = databaseManager.addRequest(title, category, location, status);
-
-    if (!saved) {
-        QMessageBox::warning(this, "Database Error",
-                             "The request could not be saved:\n" + databaseManager.getLastError());
-        return;
-    }
-
-    displayRequestCard(title, category, location, status);
+    displayRequestCard(title, category, location, "Open");
 }
